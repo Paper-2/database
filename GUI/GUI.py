@@ -82,6 +82,7 @@ class MainWindow(QMainWindow):
 
         
         self.search_bar = QLineEdit()
+        self.search_bar.setPlaceholderText("Search for a recipe: (e.g. title:mashed potatoes ingredients:potatoes)")
         
         #self.search_bar configuration
         self.search_bar.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -104,45 +105,16 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.scroll)
         
         
-        for i in range(10):
+        for i in range(6):
             self.sub_layout.addWidget(recipe_widget(Recipe(PATH_TO_RECIPE)).horizontal_item_widget())
-            
-        
-
-               
-        r"""
-        self.layout = QVBoxLayout()
-        self.widget = QWidget()
-        self.search_label = QLabel("Search:")
-        self.search = QLineEdit()
-        self.layout.addWidget(self.search_label)
-        self.scroll = QScrollArea()
-        self.search = QLineEdit()
-        
-        
-        self.layout.addWidget(self.search)
-        self.search  
-        for path in range(0,15):
-
-            self.add_row(row_button(Recipe(os.getcwd() + "\mashed_potatoes.txt"), self).get_row())
-        self.widget.setLayout(self.layout)
-        
-        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.scroll.setWidgetResizable(True)
-        self.scroll.setWidget(self.widget)
-    
-        print(len(self.children()))
-        self.setCentralWidget(self.scroll)"""
         
         
         
     def add_row(self, row: QGroupBox):
         self.layout.addWidget(row)
         
-class recipe_widget(QWidget):
+class recipe_widget:
     def __init__(self, recipe: Recipe):
-        super().__init__()
         
         self.recipe = recipe
         self.item_widget = None
@@ -182,59 +154,45 @@ class recipe_widget(QWidget):
         return self.item_widget
     
     
-    def on_item_click(self, event):
+    def on_item_click(self, _event):
         
-        instructions = self.construct_instructions_view()
-        self.item_widget.window().setCentralWidget(instructions) 
+        self.recipe_view: QWidget = self.construct_recipe_view()
+        self.item_widget.window().setCentralWidget(self.recipe_view) 
 
-    def construct_instructions_view(self):
+    def construct_recipe_view(self):
+        
+        main_widget = QWidget()
+        layout = QVBoxLayout()
+        
         instructions = QLabel(self.recipe.instructions)
-
-        font = instructions.font()
-        font.setPointSize(int(font.pointSize() * 1.2))
-        instructions.setFont(font)
-        return instructions       
-class row_button:
-    def __init__(self, recipe: Recipe, window):
+        instructions.setWordWrap(True)
+        instructions.setAlignment(Qt.AlignTop)
+        
+        push_button = QPushButton("Back")
+        push_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        push_button.setBaseSize(100, 100)
+        push_button.clicked.connect(self.on_back_click)
+        
+        main_widget.setLayout(layout)
+        
+        layout.addWidget(push_button)
+        layout.addWidget(QLabel(self.recipe.title))
+        layout.addWidget(instructions)
+        layout.addSpacerItem(QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        
+        return main_widget
+        
+        
+    def on_back_click(self):
+        
+        self.recipe_view.window().start_ui()
+        
         
 
-        self.groupBox = QGroupBox()
-        self.layout = QHBoxLayout()
-        self.recipe_name = QLabel(recipe.title)
         
-        self.ingredients = recipe.ingredients
-        # Create a QLabel to hold the icon
-        self.icon = QLabel()
-        
-        # Load the pixmap from the icon file
-        pixmap = QPixmap(ICON_PATH).scaled(80, 80)
-        
-        # Set the pixmap to the QLabel
-        self.icon.setPixmap(pixmap)
-        
-        
-        self.layout.addWidget(self.icon)
-        self.layout.addWidget(self.recipe_name)
-        
-        self.groupBox.setLayout(self.layout)
-        
-        self.groupBox.mousePressEvent = self.on_click
-    
-    def get_row(self):
-        return self.groupBox
-        
-    def on_click(self, event):
-        instructions = QLabel(self.recipe_instruction)
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
 
-        font = instructions.font()
-        font.setPointSize(int(font.pointSize() * 1.2))
-        instructions.setFont(font)
-        self.window.setCentralWidget(instructions)
-        
-        print(self.window.children())
-        
-app = QApplication(sys.argv)
+    window = MainWindow()
 
-window = MainWindow()
-
-app.exec()
+    app.exec()
