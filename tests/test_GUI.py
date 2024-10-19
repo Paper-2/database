@@ -1,5 +1,5 @@
 import unittest
-from GUI import GUI
+from GUI import GUI_module
 
 class GUITest(unittest.TestCase):
     def setUp(self):

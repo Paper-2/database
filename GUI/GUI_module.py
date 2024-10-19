@@ -21,12 +21,12 @@ class Color(QWidget):
         
 
 #this class should be moved to another file that is not GUI.py
-class Recipe:
+class Recipe_gui_proto:
     def __init__(self, path):
         self.path = path
         self.recipe = self.parse()
 
-        self.title, self.ingredients, self.instructions = self.get_recipe_info()
+        self.title, self.ingredients, self.link = self.get_recipe_info()
 
     def parse(self):
         with open(self.path, "r") as file:
@@ -100,15 +100,10 @@ class MainWindow(QMainWindow):
         ])
         combo = QComboBox()
         combo.addItems([
-            "All", "Italian", "Chinese", "Mexican", "Indian", 
-            "French", "Japanese", "Mediterranean", "Thai", 
-            "Spanish", "Greek", "Korean", "Vietnamese", 
-            "American", "Middle Eastern"
+            "All", "Italian", "Mexican", "Indian", 
+            "Japanese", "Germna"
         ])
-        for index in range(self.list_widget.count()):
-            item = self.list_widget.item(index)
-            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
-            item.setCheckState(Qt.Unchecked)
+        self.function()
         
 
         self.dock_widget.setAllowedAreas(Qt.RightDockWidgetArea)
@@ -135,8 +130,16 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.scroll)
         
         
-        for i in range(6):
-            self.sub_layout.addWidget(recipe_widget(Recipe(PATH_TO_RECIPE)).horizontal_item_widget())
+       
+
+    def add_item(self, recipe):
+        self.sub_layout.addWidget(recipe)
+
+    def function(self):
+        for index in range(self.list_widget.count()):
+            item = self.list_widget.item(index)
+            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            item.setCheckState(Qt.Unchecked)
             
     def restart_ui(self):
         self.setCentralWidget(self.main_widget)
@@ -152,7 +155,7 @@ class MainWindow(QMainWindow):
 
         
 class recipe_widget:
-    def __init__(self, recipe: Recipe, MainWindow: QMainWindow=None):
+    def __init__(self, recipe: Recipe_gui_proto, MainWindow: QMainWindow=None):
         
         self.window = MainWindow
         self.recipe = recipe
@@ -229,15 +232,14 @@ class recipe_widget:
         self.window.dock_widget.setHidden(False)
         self.window.restart_ui()
         
+    def start(self):
+        
+        app = QApplication(sys.argv)
+
+        window = MainWindow()
+        
+        app.exec()
+                
         
 
         
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-
-
-        
-    window = MainWindow()
-    
-
-    app.exec()
