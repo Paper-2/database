@@ -181,6 +181,10 @@ class Database:
         except Exception as e:
             print(f"An error occurred: {e}")
 
+    def get_all_recipes(self):
+        self.cursor.execute("SELECT * FROM Cuisines")
+        return self.cursor.fetchall()
+    
     def get_recipes(self, cuisine):
         self.cursor.execute(f"SELECT * FROM Cuisines where cui_type = '{cuisine}'") 
         return self.cursor.fetchall()
