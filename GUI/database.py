@@ -34,10 +34,9 @@ class Database:
         connection = sqlite3.connect('my_database.db')
         self.cursor = connection.cursor()
 
-
-        # Create a table
+        # Create a table with an additional column for favorites
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS Cuisines
-        (cui_type TEXT, rec_name TEXT, ingredients_list TEXT, link TEXT)
+        (cui_type TEXT, rec_name TEXT, ingredients_list TEXT, link TEXT, is_favorite INTEGER DEFAULT 0)
         ''')
 
         # Inserting sample data (Add all your recipes here)
@@ -193,5 +192,16 @@ class Database:
         self.cursor.execute(f"SELECT * FROM Cuisines where cui_type = '{cuisine}'") 
         return self.cursor.fetchone()
 
+    def get_favorite_status(self, recipe_name):
+        self.cursor.execute("SELECT is_favorite FROM Cuisines WHERE rec_name = ?", (recipe_name,))
+        result = self.cursor.fetchone()
+        return result[0] if result else 0
+
+    def set_favorite_status(self, recipe_name, status):
+        self.cursor.execute("UPDATE Cuisines SET is_favorite = ? WHERE rec_name = ?", (status, recipe_name))
+        self.cursor.connection.commit()
+
 if __name__ == "__main__":
     data = Database()
+
+

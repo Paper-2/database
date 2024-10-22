@@ -205,10 +205,11 @@ class MainWindow(QMainWindow):
 
 class recipe_widget:
     def __init__(self, recipe: Recipe_gui_proto, MainWindow: QMainWindow=None):
-        
         self.window = MainWindow
         self.recipe = recipe
         self.item_widget = None
+        self.favorite_button = QPushButton("Favorite")
+        self.favorite_button.clicked.connect(self.toggle_favorite)
 
     def get_widget(self):
         return self.widget
@@ -232,6 +233,7 @@ class recipe_widget:
 
         layout.addWidget(icon)
         layout.addWidget(title)
+        layout.addWidget(self.favorite_button)  # Add the favorite button
 
         self.item_widget = QGroupBox()
         self.item_widget.setLayout(layout)
