@@ -42,8 +42,9 @@ class Database:
         # Inserting sample data (Add all your recipes here)
         try:
             # Italian Dishes
-            self.cursor.execute('INSERT INTO Cuisines (cui_type, rec_name, ingredients_list, link) VALUES (?, ?, ?, ?)',
-                        ('Italian', 'Air Fryer Chicken Parmesan',
+            self.cursor.execute(
+                'INSERT INTO Cuisines (cui_type, rec_name, ingredients_list, link) VALUES (?, ?, ?, ?)',
+                        ('Italian', 'Air Fryer Chicken Parmesan', 
                             '2 boneless skinless chicken breasts, kosher salt, black pepper, all-purpose flour, eggs, panko breadcrumbs, Parmesan cheese, olive oil, crushed red pepper, garlic powder, marinara sauce, mozzarella cheese',
                             'https://www.allrecipes.com/air-fryer-chicken-parmesan-recipe-8698442'))
 
