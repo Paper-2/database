@@ -1,12 +1,12 @@
 from fuzzywuzzy import fuzz
 import sqlite3
+import os
 
 
 class Database:
     
     def __init__(self) -> None:
-        self.cursor = ""
-        self.connection = sqlite3.connect('my_database.db')
+        self.connection = sqlite3.connect('recipes_data.db')
         self.cursor = self.connection.cursor()
 
         self.create_table()
@@ -32,10 +32,10 @@ class Database:
 
 
     def create_table(self):
-        self.cursor.execute('''CREATE TABLE IF NOT EXISTS Cuisines
-        (cui_type TEXT, rec_name TEXT, ingredients_list TEXT, link TEXT, is_favorite INTEGER DEFAULT 0)
-        ''')
-
+        if not os.path.isfile('recipes_data.db'):
+            self.cursor.execute('''CREATE TABLE IF NOT EXISTS Cuisines
+            (cui_type TEXT, rec_name TEXT, ingredients_list TEXT, link TEXT, is_favorite INTEGER DEFAULT 0)
+            ''')
        
         try:
             # Italian Dishes
@@ -244,9 +244,21 @@ class Database:
         results = self.cursor.fetchall()
         return [(rec_name, ingredients_list, link) for rec_name, ingredients_list, link in results]
 
+    def search_recipes(self, recipe_name, ingredients="", cuisine_selected=""):
+        query = """
+        SELECT rec_name, ingredients_list, link 
+        FROM Cuisines 
+        WHERE rec_name LIKE ? AND ingredients_list LIKE ? AND cui_type LIKE ?
+        """
+
+        self.cursor.execute(query, (f'%{recipe_name}%', f'%{ingredients}%', f'%{cuisine_selected}%'))
+        results = self.cursor.fetchall()
+
+        return [(rec_name, ingredients_list, link) for rec_name, ingredients_list, link in results]
+
 if __name__ == "__main__":
     data = Database()
-    print(data.search_recipes_by_name("Tomatoes"))
+    print(data.search_recipes("german"))
     data.close()
 
 
