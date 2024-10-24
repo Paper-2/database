@@ -11,8 +11,8 @@ from utils import Recipe
 ICON_PATH: str = os.path.join(os.getcwd(), "recipe_database_icon.png")
 PATH_TO_RECIPE: str = os.path.join(os.getcwd(), "mashed_potatoes.txt")
 
-class MainWindow(QMainWindow):
 
+class MainWindow(QMainWindow):
     def __init__(self, data: Database):
         super(MainWindow, self).__init__()
         self.data = data
@@ -22,47 +22,25 @@ class MainWindow(QMainWindow):
         self.setMinimumWidth(600)
 
         self.setWindowIcon(QIcon(ICON_PATH))
-        self.start_ui()
+        self.__start_ui()
         self.show()
 
-
-    def update_recipe_list(self, recipes):
-        for i in reversed(range(self.sub_layout.count())):
-            widget = self.sub_layout.itemAt(i).widget()
-            if widget:
-                widget.deleteLater()
-
-        if recipes:
-            for rec_name, ingredients, link in recipes:
-                recipe_item = QWidget()
-                layout = QHBoxLayout()
-                title = QLabel(f"Recipe: {rec_name}")
-                ingredients_label = QLabel(f"Ingredients: {ingredients}")
-                layout.addWidget(title)
-                layout.addWidget(ingredients_label)
-                recipe_item.setLayout(layout)
-                self.sub_layout.addWidget(recipe_item)
-        else:
-            no_result_label = QLabel("No matching recipes found.")
-            self.sub_layout.addWidget(no_result_label)
-
-    def start_ui(self):
-
+    def __start_ui(self):
         self.main_layout = QVBoxLayout()
         self.sub_layout = QVBoxLayout()
-
 
         self.main_widget = QWidget()
         self.sub_widget = QWidget()
 
         self.search_button = QPushButton("Search")
-        self.search_button.clicked.connect(self.on_search)
+        self.search_button.clicked.connect(self.__on_search)
         self.main_layout.addWidget(self.search_button)
 
-
         self.search_bar = QLineEdit()
-        self.search_bar.setPlaceholderText("Search for a recipe: (e.g. mashed potatoes )")
-        self.search_bar.textChanged.connect(self.on_search)
+        self.search_bar.setPlaceholderText(
+            "Search for a recipe: (e.g. mashed potatoes )"
+        )
+        self.search_bar.textChanged.connect(self.__on_search)
         self.search_bar.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.scroll = QScrollArea()
@@ -71,29 +49,44 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock_widget)
 
         self.list_widget = QListWidget()
-        self.list_widget.addItems([
-            "Pepper", "Garlic", "Onion", "Tomatoes",
-            "Chicken", "Beef", "Pork", "Fish", "Eggs",
-            "Flour", "Rice", "Pasta", "Cheese", "Bread", "Carrots",
-            "Potatoes", "Bell Peppers", "Broccoli", "Spinach", "Mushrooms",
-            "Rosemary", "Oregano",
-        ])
-        self.list_widget.itemChanged.connect(self.on_search)
+        self.list_widget.addItems(
+            [
+                "Pepper",
+                "Garlic",
+                "Onion",
+                "Tomatoes",
+                "Chicken",
+                "Beef",
+                "Pork",
+                "Fish",
+                "Eggs",
+                "Flour",
+                "Rice",
+                "Pasta",
+                "Cheese",
+                "Bread",
+                "Carrots",
+                "Potatoes",
+                "Bell Peppers",
+                "Broccoli",
+                "Spinach",
+                "Mushrooms",
+                "Rosemary",
+                "Oregano",
+            ]
+        )
+        self.list_widget.itemChanged.connect(self.__on_search)
         for index in range(self.list_widget.count()):
             item: QListWidgetItem = self.list_widget.item(index)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
             item.setCheckState(Qt.Unchecked)
 
-        
-    
-        
         self.combo = QComboBox()
-        self.combo.addItems([
-            "All", "Italian", "Mexican", "Indian", 
-            "Japanese", "German"
-        ])
-        
-        self.combo.currentTextChanged.connect(self.on_search)
+        self.combo.addItems(
+            ["All", "Italian", "Mexican", "Indian", "Japanese", "German"]
+        )
+
+        self.combo.currentTextChanged.connect(self.__on_search)
 
         self.dock_widget.setAllowedAreas(Qt.RightDockWidgetArea)
         dock_layout = QVBoxLayout()
@@ -115,10 +108,12 @@ class MainWindow(QMainWindow):
 
         self.main_layout.addWidget(self.search_bar)
         self.main_layout.addWidget(self.scroll)
-        
-        self.add_item([recipe_widget(Recipe(recipe)) for recipe in self.data.get_all_recipes()])
-        
-    def add_item(self, *recipe: "recipe_widget"):
+
+        self.__add_item(
+            [recipe_widget(Recipe(recipe)) for recipe in self.data.get_all_recipes()]
+        )
+
+    def __add_item(self, *recipe: "recipe_widget"):
         recipe = recipe[0]
         while recipe:
             if recipe[0].title in self.recipes:
@@ -129,8 +124,8 @@ class MainWindow(QMainWindow):
             self.recipes.add(recipe[0].title)
             self.sub_layout.addWidget(recipe[0].horizontal_item_widget())
             recipe.pop(0)
-    
-    def remove_items_based_on_search(self, to_keep: set):
+
+    def __remove_items_based_on_search(self, to_keep: set):
         allowed_recipes = to_keep.intersection(self.recipes)
         self.recipes = allowed_recipes
         print(self.sub_layout.count())
@@ -140,13 +135,11 @@ class MainWindow(QMainWindow):
                 title_label = widget.findChild(QLabel, "title")
             if title_label and title_label.text() not in allowed_recipes:
                 widget.deleteLater()
-        
-        
-    def restart_ui(self):
+
+    def __restart_ui(self):
         self.setCentralWidget(self.main_widget)
-        
-        
-    def search(self):
+
+    def __search(self):
         ingredients = ""
         for index in range(self.list_widget.count()):
             item: QListWidgetItem = self.list_widget.item(index)
@@ -160,28 +153,27 @@ class MainWindow(QMainWindow):
         print(self.search_bar.text() == "")
         print(ingredients == "")
         return self.data.search_recipes(self.search_bar.text(), ingredients, combo)
-        
-    def on_search(self):
-        recipes = self.search()
+
+    def __on_search(self):
+        recipes = self.__search()
         print(len(recipes))
         recipes_to_keep = set()
         for recipe in recipes:
             recipes_to_keep.add(recipe[1])
-        
+
         recipe_widgets = []
 
         for recipe in recipes:
             if len(recipe) <= 3:
                 print(recipe)
             recipe_widgets.append(recipe_widget(Recipe(recipe)))
-        self.add_item(recipe_widgets)
+        self.__add_item(recipe_widgets)
 
-        self.remove_items_based_on_search(recipes_to_keep)
-        
-        
-        
+        self.__remove_items_based_on_search(recipes_to_keep)
+
+
 class recipe_widget:
-    def __init__(self, recipe, MainWindow: QMainWindow=None):
+    def __init__(self, recipe, MainWindow: QMainWindow = None):
         self.window = MainWindow
         self.recipe = recipe
         self.title = self.recipe.title
@@ -191,7 +183,6 @@ class recipe_widget:
         return self.widget
 
     def horizontal_item_widget(self):
-
         """
         Creates and returns a horizontal item widget for displaying a recipe.
         This method checks if the item widget already exists. If it does, it returns the existing widget.
@@ -206,14 +197,14 @@ class recipe_widget:
         layout = QHBoxLayout()
         title = QLabel(self.recipe.title)
         title.setObjectName("title")
-        icon = QLabel(); icon.setPixmap(QPixmap(ICON_PATH).scaled(80, 80))
+        icon = QLabel()
+        icon.setPixmap(QPixmap(ICON_PATH).scaled(80, 80))
         favorite_button = QPushButton("Favorite")
         favorite_button.clicked.connect(self.on_favorite_toggle)
 
-
         layout.addWidget(icon)
         layout.addWidget(title)
-        layout.addWidget(favorite_button) 
+        layout.addWidget(favorite_button)
 
         self.item_widget = QGroupBox()
         self.item_widget.setLayout(layout)
@@ -231,7 +222,6 @@ class recipe_widget:
         self.window.setCentralWidget(self.recipe_view)
 
     def construct_recipe_view(self):
-
         main_widget = QWidget()
         layout = QVBoxLayout()
 
@@ -249,18 +239,20 @@ class recipe_widget:
         layout.addWidget(push_button)
         layout.addWidget(QLabel(self.recipe.title))
         layout.addWidget(instructions)
-        layout.addSpacerItem(QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding))
+        layout.addSpacerItem(
+            QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        )
 
         return main_widget
 
     def on_back_click(self):
         self.window.dock_widget.setHidden(False)
-        self.window.restart_ui()
-        
-    def on_favorite_toggle(self):
-        #TODO: Implement this method to toggle the favorite state of the recipe.
-        ...
-        
+        self.window.__restart_ui()
 
-if __name__ == '__main__':
+    def on_favorite_toggle(self):
+        # TODO: Implement this method to toggle the favorite state of the recipe.
+        ...
+
+
+if __name__ == "__main__":
     ...

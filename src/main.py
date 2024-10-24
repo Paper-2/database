@@ -8,7 +8,6 @@ def main():
     app = QApplication(sys.argv)
 
     data = Database()
-    data.create_table()
     window = MainWindow(data)
     app.exec()
 
