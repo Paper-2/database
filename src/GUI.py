@@ -25,18 +25,6 @@ class MainWindow(QMainWindow):
         self.start_ui()
         self.show()
 
-    def search_recipes(self, search_text):
-        self.cursor = sqlite3.connect('my_database.db').cursor()
-        query = "SELECT rec_name, ingredients_list, link FROM Cuisines WHERE rec_name LIKE ?"
-        self.cursor.execute(query, (f'%{search_text}%',))
-        results = self.cursor.fetchall()
-
-        return [Recipe(title=rec_name, ingredients=ingredients_list, link=link) for rec_name, ingredients_list, link in results]
-
-    def closeEvent(self, event):
-        self.cursor.close()
-        self.connection.close()
-        event.accept()
 
     def update_recipe_list(self, recipes):
         for i in reversed(range(self.sub_layout.count())):
@@ -73,7 +61,7 @@ class MainWindow(QMainWindow):
 
 
         self.search_bar = QLineEdit()
-        self.search_bar.setPlaceholderText("Search for a recipe: (e.g. title:mashed potatoes ingredients:potatoes)")
+        self.search_bar.setPlaceholderText("Search for a recipe: (e.g. mashed potatoes )")
         self.search_bar.textChanged.connect(self.on_search)
         self.search_bar.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
@@ -90,11 +78,18 @@ class MainWindow(QMainWindow):
             "Potatoes", "Bell Peppers", "Broccoli", "Spinach", "Mushrooms",
             "Rosemary", "Oregano",
         ])
+        
+        for index in range(self.list_widget.count()):
+            item = self.list_widget.item(index)
+            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            item.setCheckState(Qt.Unchecked)
+        
         combo = QComboBox()
         combo.addItems([
             "All", "Italian", "Mexican", "Indian", 
-            "Japanese", "Germna"
+            "Japanese", "German"
         ])
+        
         self.function()
         
 

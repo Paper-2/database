@@ -79,34 +79,19 @@ class MainWindow(QMainWindow):
         self.start_ui()
         self.show()
 
-    def search_recipes(self, search_text):
-        query = """
-        SELECT rec_name, ingredients_list, link 
-        FROM Cuisines 
-        WHERE rec_name LIKE ? OR ingredients_list LIKE ?
-        """
 
-        self.cursor.execute(query, (f'%{search_text}%', f'%{search_text}%'))
-        results = self.cursor.fetchall()
-
-        return [Recipe(title=rec_name, ingredients=ingredients_list, link=link) for rec_name, ingredients_list, link in results]
-
-
-    def closeEvent(self, event):
-        self.cursor.close()
-        self.connection.close()
-        event.accept()
-
-
-
+    #TODO:
     def update_recipe_list(self, recipes):
         while self.sub_layout.count():
             child = self.sub_layout.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
 
+        # should be a function 
         if recipes:
             for recipe in recipes:
+                
+                
                 recipe_item = QGroupBox()
                 layout = QVBoxLayout()
 
@@ -159,9 +144,9 @@ class MainWindow(QMainWindow):
             "Chicken", "Beef", "Pork", "Fish", "Eggs",
             "Flour", "Rice", "Pasta", "Cheese", "Bread", "Carrots",
             "Potatoes", "Bell Peppers", "Broccoli", "Spinach", "Mushrooms",
-            "Rosemary", "Oregano",
-        ])
-
+            "Rosemary", "Oregano",])
+    
+        
         self.combo = QComboBox()
         self.combo.addItems([
             "All", "Italian", "Chinese", "Mexican", "Indian",
@@ -187,29 +172,7 @@ class MainWindow(QMainWindow):
         for i in range(6):
             self.sub_layout.addWidget(recipe_widget(Recipe(PATH_TO_RECIPE)).horizontal_item_widget())
 
-    def on_search_name(self):
-        search_text = self.search_bar.text()
-        recipes = self.search_recipes_by_name(search_text)
-        self.update_recipe_list(recipes)
-
-    def on_search_ingredient(self):
-        search_text = self.search_bar.text()
-        recipes = self.search_recipes_by_ingredient(search_text)
-        self.update_recipe_list(recipes)
-
-    def search_recipes_by_ingredient(self, search_text):
-        query = "SELECT rec_name, ingredients_list, link FROM Cuisines WHERE ingredients_list LIKE ?"
-        self.cursor.execute(query, (f'%{search_text}%',))
-        results = self.cursor.fetchall()
-        return [Recipe(title=rec_name, ingredients=ingredients_list, link=link) for rec_name, ingredients_list, link in results]
-
-    def search_recipes_by_name(self, search_text):
-        query = "SELECT rec_name, ingredients_list, link FROM Cuisines WHERE rec_name LIKE ?"
-        self.cursor.execute(query, (f'%{search_text}%',))
-        results = self.cursor.fetchall()
-
-        return [Recipe(title=rec_name, ingredients=ingredients_list, link=link) for rec_name, ingredients_list, link in results]
-
+        
 class recipe_widget:
     def __init__(self, recipe: Recipe, MainWindow: QMainWindow=None):
         self.window = MainWindow
