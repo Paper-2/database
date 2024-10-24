@@ -1,58 +1,11 @@
-import sqlite3
 import sys
 import os
-
 from PySide6.QtCore import Qt
-
 from PySide6.QtGui import QColor, QPalette, QPixmap, QIcon
-
 from PySide6.QtWidgets import *
 
-ICON_PATH: str = os.path.join(os.getcwd(), "GUI", "recipe_database_icon.png")
+ICON_PATH: str = os.path.join(os.getcwd(), "recipe_database_icon.png")
 PATH_TO_RECIPE: str = os.path.join(os.getcwd(), "mashed_potatoes.txt")
-class Color(QWidget):
-
-    def __init__(self, color):
-        super(Color, self).__init__()
-        self.setAutoFillBackground(True)
-
-        palette = self.palette()
-        palette.setColor(QPalette.Window, QColor(color))
-        self.setPalette(palette)
-
-#this class should be moved to another file that is not GUI.py
-class Recipe_gui_proto:
-    def __init__(self, path):
-        self.path = path
-        self.recipe = self.parse()
-
-        self.title, self.ingredients, self.link = self.get_recipe_info()
-
-    def parse(self):
-        with open(self.path, "r") as file:
-            recipe = file.read()
-
-        return recipe
-
-    def get_recipe_info(self):
-
-        recipe_parts = []
-
-        while len(self.recipe) > 6:
-            index = self.recipe.find("---")
-
-            if index == -1:
-                recipe_parts.append(self.recipe)
-
-                break
-
-            recipe_parts.append(self.recipe[: index - 1])
-
-            self.recipe = self.recipe[index + 4 :]
-
-        return recipe_parts
-
-
 
 class MainWindow(QMainWindow):
 
@@ -80,14 +33,10 @@ class MainWindow(QMainWindow):
 
         return [Recipe(title=rec_name, ingredients=ingredients_list, link=link) for rec_name, ingredients_list, link in results]
 
-
-
     def closeEvent(self, event):
         self.cursor.close()
         self.connection.close()
         event.accept()
-
-
 
     def update_recipe_list(self, recipes):
         for i in reversed(range(self.sub_layout.count())):
@@ -108,7 +57,6 @@ class MainWindow(QMainWindow):
         else:
             no_result_label = QLabel("No matching recipes found.")
             self.sub_layout.addWidget(no_result_label)
-
 
     def start_ui(self):
 
@@ -171,9 +119,6 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.search_bar)
         self.main_layout.addWidget(self.scroll)
         
-        
-       
-
     def add_item(self, recipe):
         self.sub_layout.addWidget(recipe)
 
@@ -201,15 +146,18 @@ class MainWindow(QMainWindow):
         for recipe in recipes:
             self.sub_layout.addWidget(recipe_widget(recipe).horizontal_item_widget())
 
+    @staticmethod
+    def start():
+        app = QApplication(sys.argv)
+        window = MainWindow()
+        app.exec()
 
 
 class recipe_widget:
-    def __init__(self, recipe: Recipe_gui_proto, MainWindow: QMainWindow=None):
+    def __init__(self, recipe, MainWindow: QMainWindow=None):
         self.window = MainWindow
         self.recipe = recipe
         self.item_widget = None
-        self.favorite_button = QPushButton("Favorite")
-        self.favorite_button.clicked.connect(self.toggle_favorite)
 
     def get_widget(self):
         return self.widget
@@ -230,10 +178,13 @@ class recipe_widget:
         layout = QHBoxLayout()
         title = QLabel(self.recipe.title)
         icon = QLabel(); icon.setPixmap(QPixmap(ICON_PATH).scaled(80, 80))
+        favorite_button = QPushButton("Favorite")
+        favorite_button.clicked.connect(self.on_favorite_toggle)
+
 
         layout.addWidget(icon)
         layout.addWidget(title)
-        layout.addWidget(self.favorite_button)  # Add the favorite button
+        layout.addWidget(favorite_button) 
 
         self.item_widget = QGroupBox()
         self.item_widget.setLayout(layout)
@@ -241,7 +192,6 @@ class recipe_widget:
         self.item_widget.mousePressEvent = self.on_item_click
 
         return self.item_widget
-
 
     def on_item_click(self, _event):
         self.window: MainWindow = self.item_widget.window()
@@ -274,19 +224,14 @@ class recipe_widget:
 
         return main_widget
 
-
     def on_back_click(self):
         self.window.dock_widget.setHidden(False)
         self.window.restart_ui()
         
-    def start(self):
-        
-        app = QApplication(sys.argv)
-
-        window = MainWindow()
-        
-        app.exec()
-                
+    def on_favorite_toggle(self):
+        #TODO: Implement this method to toggle the favorite state of the recipe.
+        ...
         
 
-        
+if __name__ == '__main__':
+    MainWindow.start()

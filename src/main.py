@@ -1,5 +1,5 @@
 import sys
-from GUI_module import *
+from GUI import *
 from PySide6.QtWidgets import *
 from database import Database
 import os
@@ -21,7 +21,7 @@ def main():
     app.exec()
 
 
-class Recipe(Recipe_gui_proto):
+class Recipe:
     def __init__(self, recipe_as_list) -> None:
         self.cui_type = recipe_as_list[0]
         self.title = recipe_as_list[1]
@@ -30,4 +30,3 @@ class Recipe(Recipe_gui_proto):
 
 if __name__ == '__main__':
     main()
-    pass

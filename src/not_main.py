@@ -1,5 +1,4 @@
 from fuzzywuzzy import fuzz
-import Levenshtein
 import sqlite3
 import string
 
