@@ -6,13 +6,12 @@ import os
 class Database:
     
     def __init__(self) -> None:
+        db_exists = os.path.isfile('recipes_data.db')
         self.connection = sqlite3.connect('recipes_data.db')
         self.cursor = self.connection.cursor()
 
-        self.create_table()
-
-
-
+        if not db_exists:
+            self.create_table()
 
     # Function to select a cuisine
     def select_cuisine(cuisines):
@@ -32,11 +31,10 @@ class Database:
 
 
     def create_table(self):
-        if not os.path.isfile('recipes_data.db'):
-            self.cursor.execute('''CREATE TABLE IF NOT EXISTS Cuisines
-            (cui_type TEXT, rec_name TEXT, ingredients_list TEXT, link TEXT, is_favorite INTEGER DEFAULT 0)
-            ''')
-       
+        self.cursor.execute('''CREATE TABLE IF NOT EXISTS Cuisines
+        (cui_type TEXT, rec_name TEXT, ingredients_list TEXT, link TEXT, is_favorite INTEGER DEFAULT 0)
+        ''')
+        
         try:
             # Italian Dishes
             self.cursor.execute('INSERT INTO Cuisines (cui_type, rec_name, ingredients_list, link) VALUES (?, ?, ?, ?)',
@@ -245,6 +243,8 @@ class Database:
         return [(rec_name, ingredients_list, link) for rec_name, ingredients_list, link in results]
 
     def search_recipes(self, recipe_name, ingredients="", cuisine_selected=""):
+        if cuisine_selected == 'All':
+            cuisine_selected == ""
         query = """
         SELECT rec_name, ingredients_list, link 
         FROM Cuisines 
@@ -254,11 +254,11 @@ class Database:
         self.cursor.execute(query, (f'%{recipe_name}%', f'%{ingredients}%', f'%{cuisine_selected}%'))
         results = self.cursor.fetchall()
 
-        return [(rec_name, ingredients_list, link) for rec_name, ingredients_list, link in results]
+        return [("cui_type", rec_name, ingredients_list, link) for  rec_name, ingredients_list, link in results]
 
 if __name__ == "__main__":
     data = Database()
-    print(data.search_recipes("german"))
+    print(data.search_recipes("", "", "All"))
     data.close()
 
 
