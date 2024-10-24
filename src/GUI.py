@@ -1,9 +1,8 @@
 import sys
 import os
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QColor, QPalette, QPixmap, QIcon
+from PySide6.QtGui import QPixmap, QIcon
 from PySide6.QtWidgets import *
-from PySide6.QtWidgets import QListWidgetItem, QWidget
 
 from database import Database
 from utils import Recipe
