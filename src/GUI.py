@@ -214,6 +214,16 @@ class recipe_widget:
         return self.item_widget
 
     def on_item_click(self, _event):
+        """
+        Handles the event when an item is clicked in the GUI.
+        This method performs the following actions:
+        1. Retrieves the main window instance from the item widget.
+        2. Constructs a new recipe view widget.
+        3. Hides the dock widget in the main window.
+        4. Removes the current central widget from the main window.
+        5. Sets the newly constructed recipe view as the central widget of the main window.
+        """
+        
         self.window: MainWindow = self.item_widget.window()
 
         self.recipe_view: QWidget = self.construct_recipe_view()
@@ -222,20 +232,31 @@ class recipe_widget:
         self.window.setCentralWidget(self.recipe_view)
 
     def construct_recipe_view(self):
+        """
+        Constructs the recipe view widget.
+        triggers the `on_back_click` method when clicked. 
+        Returns:
+            QWidget: The main widget containing the recipe view.
+        """
+        # Create the main widget and layout for the recipe view
         main_widget = QWidget()
         layout = QVBoxLayout()
 
+        # Create and configure the instructions label
         instructions = QLabel(self.recipe.instructions)
         instructions.setWordWrap(True)
         instructions.setAlignment(Qt.AlignTop)
 
+        # Create and configure the back button
         push_button = QPushButton("<-- Back")
         push_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         push_button.setBaseSize(100, 100)
         push_button.clicked.connect(self.on_back_click)
 
+        # Set the layout for the main widget
         main_widget.setLayout(layout)
 
+        # Add widgets to the layout
         layout.addWidget(push_button)
         layout.addWidget(QLabel(self.recipe.title))
         layout.addWidget(instructions)
