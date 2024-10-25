@@ -23,7 +23,6 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QIcon(ICON_PATH))
         self.__start_ui()
         self.show()
-
     def __start_ui(self):
         self.main_layout = QVBoxLayout()
         self.sub_layout = QVBoxLayout()
@@ -31,6 +30,7 @@ class MainWindow(QMainWindow):
         self.main_widget = QWidget()
         self.sub_widget = QWidget()
 
+        # Search buttons
         self.search_button = QPushButton("Search")
         self.search_button.clicked.connect(self.__on_search)
         self.main_layout.addWidget(self.search_button)
@@ -47,38 +47,130 @@ class MainWindow(QMainWindow):
         self.dock_widget = QDockWidget("Search Filters")
         self.addDockWidget(Qt.RightDockWidgetArea, self.dock_widget)
 
-        self.list_widget = QListWidget()
-        self.list_widget.addItems(
-            [
-                "Pepper",
-                "Garlic",
-                "Onion",
-                "Tomatoes",
-                "Chicken",
-                "Beef",
-                "Pork",
-                "Fish",
-                "Eggs",
-                "Flour",
-                "Rice",
-                "Pasta",
-                "Cheese",
-                "Bread",
-                "Carrots",
-                "Potatoes",
-                "Bell Peppers",
-                "Broccoli",
-                "Spinach",
-                "Mushrooms",
-                "Rosemary",
-                "Oregano",
-            ]
+        # Create QTabWidget for ingredient groups
+        self.tab_widget = QTabWidget()
+
+        # Create ingredient lists by category
+        self.protein_list = QListWidget()
+        self.carb_list = QListWidget()
+        self.veggie_list = QListWidget()
+        self.seasoning_list = QListWidget()
+        self.oil_list = QListWidget()
+        self.dairy_list = QListWidget()
+
+        # Populate each list
+        self._populate_ingredient_lists()
+
+        # Add each food group list to the corresponding tab
+        self.tab_widget.addTab(self.protein_list, "Proteins")
+        self.tab_widget.addTab(self.carb_list, "Carbs/Grains")
+        self.tab_widget.addTab(self.veggie_list, "Vegetables")
+        self.tab_widget.addTab(self.seasoning_list, "Seasonings/Spices")
+        self.tab_widget.addTab(self.oil_list, "Oils")
+        self.tab_widget.addTab(self.dairy_list, "Dairy")
+
+        self.dock_widget.setAllowedAreas(Qt.RightDockWidgetArea)
+        dock_layout = QVBoxLayout()
+        widget = QWidget()
+        widget.setLayout(dock_layout)
+        self.dock_widget.setWidget(widget)
+        dock_layout.addWidget(self.tab_widget)
+
+        self.dock_widget.setMaximumWidth(150)
+        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setWidget(self.sub_widget)
+
+        self.setCentralWidget(self.main_widget)
+
+        self.main_widget.setLayout(self.main_layout)
+        self.sub_widget.setLayout(self.sub_layout)
+
+        self.main_layout.addWidget(self.search_bar)
+        self.main_layout.addWidget(self.scroll)
+
+        # Connect itemChanged for each ingredient list
+        self.protein_list.itemChanged.connect(self.__on_search)
+        self.carb_list.itemChanged.connect(self.__on_search)
+        self.veggie_list.itemChanged.connect(self.__on_search)
+        self.seasoning_list.itemChanged.connect(self.__on_search)
+        self.oil_list.itemChanged.connect(self.__on_search)
+        self.dairy_list.itemChanged.connect(self.__on_search)
+
+        # Initially load all recipes
+        self.__add_item(
+            [recipe_widget(Recipe(recipe)) for recipe in self.data.get_all_recipes()]
         )
-        self.list_widget.itemChanged.connect(self.__on_search)
-        for index in range(self.list_widget.count()):
-            item: QListWidgetItem = self.list_widget.item(index)
+#made a ingredients function that categorizes all of the ingredients in the available recipies to choose from
+    def _populate_ingredient_lists(self):
+        # Proteins
+        proteins = ["Chicken", "Beef", "Pork", "Fish", "Eggs"]
+        for protein in proteins:
+            item = QListWidgetItem(protein)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
             item.setCheckState(Qt.Unchecked)
+            self.protein_list.addItem(item)
+
+        # Carbs/Grains
+        carbs = ["Flour", "Rice", "Pasta", "Bread"]
+        for carb in carbs:
+            item = QListWidgetItem(carb)
+            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            item.setCheckState(Qt.Unchecked)
+            self.carb_list.addItem(item)
+
+        # Vegetables
+        veggies = ["Onion", "Tomatoes", "Carrots", "Potatoes", "Bell Peppers", "Broccoli", "Spinach", "Mushrooms"]
+        for veggie in veggies:
+            item = QListWidgetItem(veggie)
+            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            item.setCheckState(Qt.Unchecked)
+            self.veggie_list.addItem(item)
+
+        # Seasonings/Spices
+        seasonings = ["Pepper", "Garlic", "Rosemary", "Oregano"]
+        for seasoning in seasonings:
+            item = QListWidgetItem(seasoning)
+            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            item.setCheckState(Qt.Unchecked)
+            self.seasoning_list.addItem(item)
+
+        # Oils
+        oils = ["Olive Oil"]
+        for oil in oils:
+            item = QListWidgetItem(oil)
+            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            item.setCheckState(Qt.Unchecked)
+            self.oil_list.addItem(item)
+
+        # Dairy
+        dairy = ["Cheese", "Mozzarella Cheese", "Parmesan Cheese"]
+        for item_name in dairy:
+            item = QListWidgetItem(item_name)
+            item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
+            item.setCheckState(Qt.Unchecked)
+            self.dairy_list.addItem(item)
+
+        # Connect itemChanged signal for each list to the search function
+        self.protein_list.itemChanged.connect(self.__on_search)
+        self.carb_list.itemChanged.connect(self.__on_search)
+        self.veggie_list.itemChanged.connect(self.__on_search)
+        self.seasoning_list.itemChanged.connect(self.__on_search)
+        self.oil_list.itemChanged.connect(self.__on_search)
+        self.dairy_list.itemChanged.connect(self.__on_search)
+
+
+        # Add each food group list to the corresponding tab
+        self.tab_widget.addTab(self.protein_list, "Proteins")
+        self.tab_widget.addTab(self.carb_list, "Carbs/Grains")
+        self.tab_widget.addTab(self.veggie_list, "Vegetables")
+        self.tab_widget.addTab(self.seasoning_list, "Seasonings/Spices")
+        self.tab_widget.addTab(self.oil_list, "Oils")
+        self.tab_widget.addTab(self.dairy_list, "Dairy")
+
+        # Add the tab widget to the main layout
+        self.main_layout.addWidget(self.tab_widget)
 
         self.combo = QComboBox()
         self.combo.addItems(
@@ -93,7 +185,6 @@ class MainWindow(QMainWindow):
         widget.setLayout(dock_layout)
         self.dock_widget.setWidget(widget)
         dock_layout.addWidget(self.combo)
-        dock_layout.addWidget(self.list_widget)
         self.dock_widget.setMaximumWidth(150)
         self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -139,19 +230,24 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.main_widget)
 
     def __search(self):
+        # Combine all selected ingredients from all lists
         ingredients = ""
-        for index in range(self.list_widget.count()):
-            item: QListWidgetItem = self.list_widget.item(index)
-            if item.checkState() != Qt.Unchecked:
-                ingredients += f"%{item.text()}%"
-        print()
+
+        # Loop through each food group and collect checked ingredients
+        for list_widget in [self.protein_list, self.carb_list, self.veggie_list, self.seasoning_list, self.oil_list, self.dairy_list]:
+            for index in range(list_widget.count()):
+                item: QListWidgetItem = list_widget.item(index)
+                if item.checkState() != Qt.Unchecked:
+                    ingredients += f"%{item.text()}% "
+
+        # Handle cuisine combo selection
         if self.combo.currentText() == "All":
             combo = ""
         else:
             combo = self.combo.currentText()
-        print(self.search_bar.text() == "")
-        print(ingredients == "")
-        return self.data.search_recipes(self.search_bar.text(), ingredients, combo)
+
+        # Perform search in the database
+        return self.data.search_recipes(self.search_bar.text(), ingredients.strip(), combo)
 
     def __on_search(self):
         recipes = self.__search()
@@ -222,7 +318,7 @@ class recipe_widget:
         4. Removes the current central widget from the main window.
         5. Sets the newly constructed recipe view as the central widget of the main window.
         """
-        
+
         self.window: MainWindow = self.item_widget.window()
 
         self.recipe_view: QWidget = self.construct_recipe_view()
@@ -233,7 +329,7 @@ class recipe_widget:
     def construct_recipe_view(self):
         """
         Constructs the recipe view widget.
-        triggers the `on_back_click` method when clicked. 
+        triggers the on_back_click method when clicked.
         Returns:
             QWidget: The main widget containing the recipe view.
         """
@@ -265,9 +361,12 @@ class recipe_widget:
 
         return main_widget
 
+#fixed back to button to go back to the main_widget
     def on_back_click(self):
-        self.window.dock_widget.setHidden(False)
-        self.window.__restart_ui()
+        # Restore the original UI layout and make the dock widget visible again
+        self.window.dock_widget.setHidden(False)  # Show the dock widget
+        self.window.setCentralWidget(self.window.main_widget)  # Reset the central widget
+
 
     def on_favorite_toggle(self):
         # TODO: Implement this method to toggle the favorite state of the recipe.
