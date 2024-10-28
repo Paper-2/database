@@ -129,7 +129,7 @@ class MainWindow(QMainWindow):
             self.veggie_list.addItem(item)
 
         # Seasonings/Spices
-        seasonings = ["Salt", "Pepper", "Garlic", "Rosemary", "Oregano", "Cilantro", "Cumin", "Ginger", "Cayenne Pepper", "Tumeric", "Sugar", ""]
+        seasonings = ["Salt", "Pepper", "Garlic", "Rosemary", "Oregano", "Cilantro", "Cumin", "Ginger", "Cayenne Pepper", "Tumeric", "Sugar"]
         for seasoning in seasonings:
             item = QListWidgetItem(seasoning)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
