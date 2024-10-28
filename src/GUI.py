@@ -23,6 +23,7 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QIcon(ICON_PATH))
         self.__start_ui()
         self.show()
+
     def __start_ui(self):
         self.main_layout = QVBoxLayout()
         self.sub_layout = QVBoxLayout()
@@ -90,6 +91,15 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.search_bar)
         self.main_layout.addWidget(self.scroll)
 
+        # Add select cuisine button
+        self.combo = QComboBox()
+        self.combo.addItems(
+            ["All", "Italian", "Mexican", "Indian", "Japanese", "German"]
+        )
+        #fixed the select cuisine box, we had to add widget and connect it to on search
+        self.combo.currentTextChanged.connect(self.__on_search)
+        self.main_layout.addWidget(self.combo)
+
         # Connect itemChanged for each ingredient list
         self.protein_list.itemChanged.connect(self.__on_search)
         self.carb_list.itemChanged.connect(self.__on_search)
@@ -98,14 +108,14 @@ class MainWindow(QMainWindow):
         self.oil_list.itemChanged.connect(self.__on_search)
         self.dairy_list.itemChanged.connect(self.__on_search)
 
-        # Initially load all recipes
+        # Initially load all recipes with MainWindow instance
         self.__add_item(
-            [recipe_widget(Recipe(recipe)) for recipe in self.data.get_all_recipes()]
+            [recipe_widget(Recipe(recipe), self) for recipe in self.data.get_all_recipes()]
         )
-#made a ingredients function that categorizes all of the ingredients in the available recipies to choose from
+
     def _populate_ingredient_lists(self):
         # Proteins
-        proteins = ["Chicken", "Beef", "Pork", "Fish", "Eggs"]
+        proteins = ["Chicken", "Beef", "Pork", "Fish", "Eggs", "Veal", "Chuck Roast"]
         for protein in proteins:
             item = QListWidgetItem(protein)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
@@ -113,7 +123,7 @@ class MainWindow(QMainWindow):
             self.protein_list.addItem(item)
 
         # Carbs/Grains
-        carbs = ["Flour", "Rice", "Pasta", "Bread"]
+        carbs = ["Flour", "Rice", "Pasta", "Bread", "Tortillas"]
         for carb in carbs:
             item = QListWidgetItem(carb)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
@@ -121,7 +131,7 @@ class MainWindow(QMainWindow):
             self.carb_list.addItem(item)
 
         # Vegetables
-        veggies = ["Onion", "Tomatoes", "Carrots", "Potatoes", "Bell Peppers", "Broccoli", "Spinach", "Mushrooms"]
+        veggies = ["Onion", "Tomatoes", "Carrot", "Potatoes", "Serrano Peppers", "Green Chile Peppers", "Cilantro"]
         for veggie in veggies:
             item = QListWidgetItem(veggie)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
@@ -129,7 +139,7 @@ class MainWindow(QMainWindow):
             self.veggie_list.addItem(item)
 
         # Seasonings/Spices
-        seasonings = ["Pepper", "Garlic", "Rosemary", "Oregano"]
+        seasonings = ["Salt", "Pepper", "Garlic", "Rosemary", "Oregano", "Cilantro", "Cumin", "Ginger", "Cayenne Pepper", "Turmeric", "Sugar"]
         for seasoning in seasonings:
             item = QListWidgetItem(seasoning)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
@@ -137,7 +147,7 @@ class MainWindow(QMainWindow):
             self.seasoning_list.addItem(item)
 
         # Oils
-        oils = ["Olive Oil"]
+        oils = ["Olive Oil", "Vegetable Oil", "Sesame Oil"]
         for oil in oils:
             item = QListWidgetItem(oil)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
@@ -145,75 +155,21 @@ class MainWindow(QMainWindow):
             self.oil_list.addItem(item)
 
         # Dairy
-        dairy = ["Cheese", "Mozzarella Cheese", "Parmesan Cheese"]
+        dairy = ["Cheese", "Mozzarella Cheese", "Parmesan Cheese", "Mexican Cheese"]
         for item_name in dairy:
             item = QListWidgetItem(item_name)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
             item.setCheckState(Qt.Unchecked)
             self.dairy_list.addItem(item)
 
-        # Connect itemChanged signal for each list to the search function
-        self.protein_list.itemChanged.connect(self.__on_search)
-        self.carb_list.itemChanged.connect(self.__on_search)
-        self.veggie_list.itemChanged.connect(self.__on_search)
-        self.seasoning_list.itemChanged.connect(self.__on_search)
-        self.oil_list.itemChanged.connect(self.__on_search)
-        self.dairy_list.itemChanged.connect(self.__on_search)
-
-
-        # Add each food group list to the corresponding tab
-        self.tab_widget.addTab(self.protein_list, "Proteins")
-        self.tab_widget.addTab(self.carb_list, "Carbs/Grains")
-        self.tab_widget.addTab(self.veggie_list, "Vegetables")
-        self.tab_widget.addTab(self.seasoning_list, "Seasonings/Spices")
-        self.tab_widget.addTab(self.oil_list, "Oils")
-        self.tab_widget.addTab(self.dairy_list, "Dairy")
-
-        # Add the tab widget to the main layout
-        self.main_layout.addWidget(self.tab_widget)
-
-        self.combo = QComboBox()
-        self.combo.addItems(
-            ["All", "Italian", "Mexican", "Indian", "Japanese", "German"]
-        )
-
-        self.combo.currentTextChanged.connect(self.__on_search)
-
-        self.dock_widget.setAllowedAreas(Qt.RightDockWidgetArea)
-        dock_layout = QVBoxLayout()
-        widget = QWidget()
-        widget.setLayout(dock_layout)
-        self.dock_widget.setWidget(widget)
-        dock_layout.addWidget(self.combo)
-        self.dock_widget.setMaximumWidth(150)
-        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.scroll.setWidgetResizable(True)
-        self.scroll.setWidget(self.sub_widget)
-
-        self.setCentralWidget(self.main_widget)
-
-        self.main_widget.setLayout(self.main_layout)
-        self.sub_widget.setLayout(self.sub_layout)
-
-        self.main_layout.addWidget(self.search_bar)
-        self.main_layout.addWidget(self.scroll)
-
-        self.__add_item(
-            [recipe_widget(Recipe(recipe)) for recipe in self.data.get_all_recipes()]
-        )
-
-    def __add_item(self, *recipe: "recipe_widget"):
-        recipe = recipe[0]
-        while recipe:
-            if recipe[0].title in self.recipes:
+    def __add_item(self, recipe_widgets):
+        for widget in recipe_widgets:
+            if widget.title in self.recipes:
                 print("skipping duplicate")
-                recipe.pop(0)
                 continue
 
-            self.recipes.add(recipe[0].title)
-            self.sub_layout.addWidget(recipe[0].horizontal_item_widget())
-            recipe.pop(0)
+            self.recipes.add(widget.title)
+            self.sub_layout.addWidget(widget.horizontal_item_widget())
 
     def __remove_items_based_on_search(self, to_keep: set):
         allowed_recipes = to_keep.intersection(self.recipes)
@@ -261,30 +217,33 @@ class MainWindow(QMainWindow):
         for recipe in recipes:
             if len(recipe) <= 3:
                 print(recipe)
-            recipe_widgets.append(recipe_widget(Recipe(recipe)))
+            recipe_widgets.append(recipe_widget(Recipe(recipe), self))
         self.__add_item(recipe_widgets)
 
         self.__remove_items_based_on_search(recipes_to_keep)
 
 
+# You would also need to update the 'recipe_widget' class and other logic as needed.
 class recipe_widget:
-    def __init__(self, recipe, MainWindow: QMainWindow = None):
-        self.window = MainWindow
+    def __init__(self, recipe, main_window: QMainWindow = None):
+        self.window = main_window  # Store reference to MainWindow
         self.recipe = recipe
         self.title = self.recipe.title
         self.item_widget = None
+        # Load the favorite status from the database using main window's data reference
+        self.is_favorite = self.window.data.get_favorite_status(self.recipe.title) if self.window else 0
 
     def get_widget(self):
-        return self.widget
+        return self.item_widget
 
     def horizontal_item_widget(self):
         """
         Creates and returns a horizontal item widget for displaying a recipe.
         This method checks if the item widget already exists. If it does, it returns the existing widget.
-        Otherwise, it creates a new horizontal layout containing an icon and a title label,
+        Otherwise, it creates a new horizontal layout containing an icon, a title label, and a favorite button,
         sets this layout to a QGroupBox, and returns the newly created widget.
         Returns:
-            QGroupBox: The horizontal item widget containing the recipe's icon and title.
+            QGroupBox: The horizontal item widget containing the recipe's icon, title, and favorite button.
         """
         if self.item_widget is not None:
             return self.item_widget
@@ -294,19 +253,39 @@ class recipe_widget:
         title.setObjectName("title")
         icon = QLabel()
         icon.setPixmap(QPixmap(ICON_PATH).scaled(80, 80))
-        favorite_button = QPushButton("Favorite")
-        favorite_button.clicked.connect(self.on_favorite_toggle)
 
+        # Create Favorite Button
+        self.favorite_button = QPushButton("Favorite" if not self.is_favorite else "Unfavorite")
+        self.favorite_button.clicked.connect(self.on_favorite_toggle)
+
+        # Add widgets to layout
         layout.addWidget(icon)
         layout.addWidget(title)
-        layout.addWidget(favorite_button)
+        layout.addWidget(self.favorite_button)
 
+        # Create a group box to contain the recipe item
         self.item_widget = QGroupBox()
         self.item_widget.setLayout(layout)
 
+        # Connect the item click to open a detailed view of the recipe
         self.item_widget.mousePressEvent = self.on_item_click
 
         return self.item_widget
+
+    def on_favorite_toggle(self):
+        """
+        Toggles the favorite state of the recipe.
+        Updates the database and changes the button text accordingly.
+        """
+        # Toggle favorite status
+        self.is_favorite = not self.is_favorite
+
+        # Update the favorite status in the database
+        if self.window:
+            self.window.data.set_favorite_status(self.recipe.title, int(self.is_favorite))
+
+        # Update the button text based on the new status
+        self.favorite_button.setText("Unfavorite" if self.is_favorite else "Favorite")
 
     def on_item_click(self, _event):
         """
@@ -318,7 +297,6 @@ class recipe_widget:
         4. Removes the current central widget from the main window.
         5. Sets the newly constructed recipe view as the central widget of the main window.
         """
-
         self.window: MainWindow = self.item_widget.window()
 
         self.recipe_view: QWidget = self.construct_recipe_view()
@@ -329,7 +307,7 @@ class recipe_widget:
     def construct_recipe_view(self):
         """
         Constructs the recipe view widget.
-        triggers the on_back_click method when clicked.
+        Triggers the `on_back_click` method when clicked.
         Returns:
             QWidget: The main widget containing the recipe view.
         """
@@ -361,17 +339,27 @@ class recipe_widget:
 
         return main_widget
 
-#fixed back to button to go back to the main_widget
     def on_back_click(self):
         # Restore the original UI layout and make the dock widget visible again
         self.window.dock_widget.setHidden(False)  # Show the dock widget
         self.window.setCentralWidget(self.window.main_widget)  # Reset the central widget
 
-
     def on_favorite_toggle(self):
-        # TODO: Implement this method to toggle the favorite state of the recipe.
-        ...
+        """
+        Toggles the favorite state of the recipe.
+        Updates the database and changes the button text accordingly.
+        """
+        # Toggle favorite status
+        self.is_favorite = not self.is_favorite
 
+        # Update the favorite status in the database
+        self.window.data.set_favorite_status(self.recipe.title, int(self.is_favorite))
+
+        # Update the button text based on the new status
+        if self.is_favorite:
+            self.favorite_button.setText("Unfavorite")
+        else:
+            self.favorite_button.setText("Favorite")
 
 if __name__ == "__main__":
     ...
