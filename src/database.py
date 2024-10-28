@@ -73,17 +73,17 @@ class Database:
             # Mexican Dishes
             self.cursor.execute('INSERT INTO Cuisines (cui_type, rec_name, ingredients_list, link) VALUES (?, ?, ?, ?)',
                         ('Mexican', 'The Best Chimichangas',
-                            'kosher salt, black pepper, garlic powder, chicken breasts, olive oil, onion, garlic, ancho chili powder, cumin, water, chicken bouillon, green chiles, all-purpose flour, peanut oil, flour tortillas, refried beans, pepper jack cheese',
+                            'kosher salt, black pepper, garlic powder, chicken breasts, olive oil, onion, garlic, ancho chili powder, cumin, water, chicken bouillon, green chiles, all-purpose flour, peanut oil, flour Tortillas, refried beans, pepper jack cheese',
                             'https://www.allrecipes.com/the-best-chimichangas-recipe-8637540'))
 
             self.cursor.execute('INSERT INTO Cuisines (cui_type, rec_name, ingredients_list, link) VALUES (?, ?, ?, ?)',
                         ('Mexican', 'Traditional Mexican Street Tacos',
-                            'corn tortillas, cooked chicken, cilantro, white onion, guacamole, lime',
+                            'corn Tortillas, cooked chicken, cilantro, white onion, guacamole, lime',
                             'https://www.allrecipes.com/recipe/257988/traditional-mexican-street-tacos/'))
 
             self.cursor.execute('INSERT INTO Cuisines (cui_type, rec_name, ingredients_list, link) VALUES (?, ?, ?, ?)',
                         ('Mexican', 'Enchiladas Verdes',
-                            'tomatillos, serrano peppers, garlic, vegetable oil, corn tortillas, water, chicken bouillon, shredded chicken, lettuce, cilantro, crema, cotija cheese',
+                            'tomatillos, serrano peppers, garlic, vegetable oil, corn Tortillas, water, chicken bouillon, shredded chicken, lettuce, cilantro, crema, cotija cheese',
                             'https://www.allrecipes.com/recipe/213700/enchiladas-verdes/'))
 
             self.cursor.execute('INSERT INTO Cuisines (cui_type, rec_name, ingredients_list, link) VALUES (?, ?, ?, ?)',
@@ -93,7 +93,7 @@ class Database:
 
             self.cursor.execute('INSERT INTO Cuisines (cui_type, rec_name, ingredients_list, link) VALUES (?, ?, ?, ?)',
                         ('Mexican', 'Fabulous Wet Burritos',
-                            'ground beef, onion, garlic, cumin, salt, pepper, refried beans, green chile peppers, chili, tomato soup, enchilada sauce, flour tortillas, lettuce, tomatoes, Mexican cheese blend, green onions',
+                            'ground beef, onion, garlic, cumin, salt, pepper, refried beans, green chile peppers, chili, tomato soup, enchilada sauce, flour Tortillas, lettuce, tomatoes, Mexican cheese blend, green onions',
                             'https://www.allrecipes.com/recipe/70404/fabulous-wet-burritos/'))
 
             # Japanese Dishes
@@ -177,7 +177,7 @@ class Database:
         Returns:
             int: 1 if the recipe is marked as favorite, 0 otherwise.
         """
-        self.cursor.execute("SELECT is_favorite FROM Cuisines WHERE rec_name = ?", (recipe_name))
+        self.cursor.execute("SELECT is_favorite FROM Cuisines WHERE rec_name = ?", (recipe_name,))
         result = self.cursor.fetchone()
         return result[0] if result else 0
 
