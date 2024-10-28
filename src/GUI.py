@@ -115,7 +115,7 @@ class MainWindow(QMainWindow):
 
     def _populate_ingredient_lists(self):
         # Proteins
-        proteins = ["Chicken", "Beef", "Pork", "Fish", "Eggs", "Veal", "Chuck Roast"]
+        proteins = ["Chicken", "Beef", "Pork", "Tuna", "Eggs", "Veal", "Chuck Roast"]
         for protein in proteins:
             item = QListWidgetItem(protein)
             item.setFlags(item.flags() | Qt.ItemIsUserCheckable)
