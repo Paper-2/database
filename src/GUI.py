@@ -12,6 +12,9 @@ PATH_TO_RECIPE: str = os.path.join(os.getcwd(), "mashed_potatoes.txt")
 
 
 class MainWindow(QMainWindow):
+    """
+    MainWindow is a class for the Recipe Book GUI application.
+    """
     def __init__(self, data: Database):
         super(MainWindow, self).__init__()
         self.data = data
@@ -59,7 +62,7 @@ class MainWindow(QMainWindow):
         self.dairy_list = QListWidget()
 
         # Populate each list
-        self._populate_ingredient_lists()
+        self.__populate_ingredient_lists()
 
         # Add each food group list to the corresponding tab
         self.tab_widget.addTab(self.protein_list, "Proteins")
@@ -103,7 +106,7 @@ class MainWindow(QMainWindow):
             [recipe_widget(Recipe(recipe)) for recipe in self.data.get_all_recipes()]
         )
 #made a ingredients function that categorizes all of the ingredients in the available recipies to choose from
-    def _populate_ingredient_lists(self):
+    def __populate_ingredient_lists(self):
         # Proteins
         proteins = ["Chicken", "Beef", "Pork", "Fish", "Eggs", "Veal", "Chuck Roast"]
         for protein in proteins:
@@ -268,6 +271,14 @@ class MainWindow(QMainWindow):
 
 
 class recipe_widget:
+    """
+    recipe_widget is a class that represents a widget for displaying and interacting with a recipe in a GUI application.
+    Attributes:
+        window (QMainWindow): The main window instance where the widget is displayed.
+        recipe (Recipe): The recipe object containing details about the recipe.
+        title (str): The title of the recipe.
+        item_widget (QGroupBox): The widget instance for displaying the recipe in a horizontal layout.
+    """
     def __init__(self, recipe, MainWindow: QMainWindow = None):
         self.window = MainWindow
         self.recipe = recipe
@@ -275,6 +286,12 @@ class recipe_widget:
         self.item_widget = None
 
     def get_widget(self):
+        """
+        Retrieve the widget instance.
+        Returns:
+            Widget: The widget instance associated with this object.
+        """
+        
         return self.widget
 
     def horizontal_item_widget(self):
@@ -363,6 +380,12 @@ class recipe_widget:
 
 #fixed back to button to go back to the main_widget
     def on_back_click(self):
+        """
+        Handles the event when the back button is clicked.
+        This method restores the original UI layout by making the dock widget visible
+        and resetting the central widget to the main widget.
+        """
+        
         # Restore the original UI layout and make the dock widget visible again
         self.window.dock_widget.setHidden(False)  # Show the dock widget
         self.window.setCentralWidget(self.window.main_widget)  # Reset the central widget

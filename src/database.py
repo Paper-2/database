@@ -202,6 +202,10 @@ class Database:
 
 
     def get_favorite_recipes(self):
+        """
+        Fetches and returns a list of favorite recipes from the Cuisines table.
+        """
+        
         self.cursor.execute("SELECT rec_name, ingredients_list, link FROM Cuisines WHERE is_favorite = 1")
         results = self.cursor.fetchall()
         return [(rec_name, ingredients_list, link) for rec_name, ingredients_list, link in results]
