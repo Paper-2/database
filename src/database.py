@@ -177,7 +177,7 @@ class Database:
         Returns:
             int: 1 if the recipe is marked as favorite, 0 otherwise.
         """
-        self.cursor.execute("SELECT is_favorite FROM Cuisines WHERE rec_name = ?", (recipe_name))
+        self.cursor.execute("SELECT is_favorite FROM Cuisines WHERE rec_name = ?", (recipe_name,))
         result = self.cursor.fetchone()
         return result[0] if result else 0
 
