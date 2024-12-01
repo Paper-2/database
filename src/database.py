@@ -4,7 +4,7 @@ import json
 
 class Database:
     
-    def __init__(self) -> None:  #TODO: UPDATE METHOD
+    def __init__(self) -> None: 
         os.remove('recipes_data.db')
         self.connection = sqlite3.connect('recipes_data.db')
         
@@ -12,7 +12,7 @@ class Database:
 
         self.__create_table()
 
-    def __create_table(self):  #TODO: UPDATE METHOD
+    def __create_table(self):  
         
         json_files = get_all_jsons()
         
@@ -121,7 +121,7 @@ class Database:
             list: A list of tuples, where each tuple represents a row in the Cuisines table.
         """
         
-        self.cursor.execute("SELECT * FROM Cuisines")
+        self.cursor.execute("SELECT name FROM Cuisines")
         return self.cursor.fetchall()
     
     def isfavorite(self, name):
@@ -169,7 +169,7 @@ class Database:
         results = self.cursor.fetchall()
         return [name for name in results]
 
-    def search_recipes(self, recipe_name, ingredients="", cuisine_selected=""):  #TODO: UPDATE METHOD
+    def search_recipes(self, recipe_name, ingredients="", cuisine_selected=""):
         """
         Searches for recipes in the database based on the given criteria.
         Args:
@@ -193,6 +193,99 @@ class Database:
         results = self.cursor.fetchall()
 
         return [name for name in results]
+
+    def get_nutrition(self, name):
+        """
+        Retrieves the nutrition information for a recipe from the database.
+
+        Args:
+            name (str): The name of the recipe to retrieve the nutrition information for.
+
+        Returns:
+            dict: A dictionary containing the nutrition information for the recipe.
+        """
+        self.cursor.execute("SELECT * FROM Cuisines WHERE name = ?", (name,))
+        result = self.cursor.fetchone()
+
+        return {
+            "calories": result[5],
+            "carbohydrateContent": result[6],
+            "cholesterolContent": result[7],
+            "fiberContent": result[8],
+            "proteinContent": result[9],
+            "saturatedFatContent": result[10],
+            "sodiumContent": result[11],
+            "sugarContent": result[12],
+            "fatContent": result[13],
+            "unsaturatedFatContent": result[14]
+        }
+    
+    def get_recipe(self, name):
+        """
+        Retrieves all the information for a recipe from the database.
+
+        Args:
+            name (str): The name of the recipe to retrieve the recipe information for.
+
+        Returns:
+            dict: A dictionary containing the recipe information for the recipe.
+        """
+        self.cursor.execute("SELECT * FROM Cuisines WHERE name = ?", (name,))
+        result = self.cursor.fetchone()
+
+        return {
+            "name": result[0],
+            "description": result[1],
+            "recipeCuisine": result[2],
+            "totalTime": result[3],
+            "cookTime": result[4],
+            "calories": result[5],
+            "carbohydrateContent": result[6],
+            "cholesterolContent": result[7],
+            "fiberContent": result[8],
+            "proteinContent": result[9],
+            "saturatedFatContent": result[10],
+            "sodiumContent": result[11],
+            "sugarContent": result[12],
+            "fatContent": result[13],
+            "unsaturatedFatContent": result[14],
+            "prepTime": result[15],
+            "recipeCategory": result[16],
+            "recipeIngredient": result[17],
+            "recipeInstructions": result[18],
+            "recipeYield": result[19]
+        }
+    
+    def get_recipe_ingredients(self, name):
+        """
+        Retrieves the ingredients for a recipe from the database.
+
+        Args:
+            name (str): The name of the recipe to retrieve the ingredients for.
+
+        Returns:
+            list: A list of ingredients for the recipe.
+        """
+        self.cursor.execute("SELECT recipeIngredient FROM Cuisines WHERE name = ?", (name,))
+        result = self.cursor.fetchone()
+
+        return result[0]
+
+    def get_recipe_instructions(self, name):
+        """
+        Retrieves the instructions for a recipe from the database.
+
+        Args:
+            name (str): The name of the recipe to retrieve the instructions for.
+
+        Returns:
+            list: A list of instructions for the recipe.
+        """
+        self.cursor.execute("SELECT recipeInstructions FROM Cuisines WHERE name = ?", (name,))
+        result = self.cursor.fetchone()
+
+        return result[0]
+    
 
 def get_all_jsons():
     """
