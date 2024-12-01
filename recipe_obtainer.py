@@ -1,6 +1,8 @@
 import re
 import json
 import os
+import threading
+import requests
 
 """
 
@@ -8,39 +10,18 @@ Not meant to be used as a module. This script is used to obtain recipes from the
 """
 
 links_pattern_NODE = r"https:\/\/www\.allrecipes\.com\/recipes/[0-9]{2,5}/.*/"
-links_pattern_RECIPE = r"https:\/\/www\.allrecipes\.com\/(recipe\/|.*-recipe-\d+)"
+links_pattern_RECIPE = r"https:\/\/www\.allrecipes\.com\/(recipe\/[0-9]*\/[a-zA-Z\-]*\/|[a-zA-Z\-]*recipe-\d+)"
 
 before_json_embed = r'<script id="allrecipes-schema_1-0" class="comp allrecipes-schema mntl-schema-unified" type="application/ld+json">['
 after_json_embed = r"]</script>"
 
 urls = [
     "https://www.allrecipes.com/recipe/14522/pizza-on-the-grill-i/",
-    "https://www.allrecipes.com/recipe/23600/worlds-best-lasagna/",
-    "https://www.allrecipes.com/recipe/229960/shrimp-scampi-with-pasta/",
-    "https://www.allrecipes.com/recipe/40399/the-best-meatballs/",
-    "https://www.allrecipes.com/recipe/246717/indian-butter-chicken-chicken-makhani/",
-    "https://www.allrecipes.com/recipe/45736/chicken-tikka-masala/",
-    "https://www.allrecipes.com/recipe/16641/red-lentil-curry/",
-    "https://www.allrecipes.com/recipe/8467738/green-onion-garlic-naan-bread/",
-    "https://www.allrecipes.com/recipe/257988/traditional-mexican-street-tacos/",
-    "https://www.allrecipes.com/recipe/213700/enchiladas-verdes/",
-    "https://www.allrecipes.com/recipe/34759/beef-tamales/",
-    "https://www.allrecipes.com/recipe/70404/fabulous-wet-burritos/",
-    "https://www.allrecipes.com/recipe/72068/chicken-katsu/",
-    "https://www.allrecipes.com/recipe/140422/onigiri-japanese-rice-balls/",
-    "https://www.allrecipes.com/recipe/190943/spicy-tuna-sushi-roll/",
-    "https://www.allrecipes.com/recipe/13107/miso-soup/",
-    "https://www.allrecipes.com/recipe/216330/german-pork-chops-and-sauerkraut/",
-    "https://www.allrecipes.com/recipe/78117/wienerschnitzel/",
-    "https://www.allrecipes.com/recipe/24674/german-zwiebelkuchen-onion-pie/",
-    "https://www.allrecipes.com/recipe/24676/german-currywurst/",
 ]
 
 
 def get_text_from_web(url):
     # some code to get the text from the web
-    import requests
-
     response = requests.get(url)
     if response.status_code == 200:
         return response.text
@@ -79,12 +60,41 @@ def clean_file(file):
         f.truncate()
         f.write(text)
 
+def recursive_recipe_search(url, urls, visited_nodes=set(), visited_recipes=set(), depth=0, max_depth=10):
+    
+    if depth > max_depth:
+        return 
 
-while len(urls) < 1000:
+    text = get_text_from_web(url)
+    new_links = cut_match(links_pattern_NODE, text)
+    recipe_links = cut_match(links_pattern_RECIPE, text)
+    
+    threads = []
+    for link in recipe_links:
+        if link not in visited_recipes:
+            link = f"https://www.allrecipes.com/{link}"
+            threads.insert(0, threading.Thread(target=make_json, args=(link,)))
+            threads[0].start()
+            visited_recipes.add(link)
+            urls.append(link)
+
+    for thread in threads:
+        thread.join()
+    
+    for link in new_links:
+        if link not in visited_nodes:
+            visited_nodes.add(link)
+            urls.append(link)
+            recursive_recipe_search(link, urls, visited_nodes, visited_recipes, depth + 1, max_depth)
+
+def make_json(url):
     text: str = get_text_from_web(url)
 
     text = delete_before_match(before_json_embed, text)
     text = delete_after_match(after_json_embed, text)
+    
+
+    
     text = re.sub("&#39;", "'", text)
     # Load JSON data from the string
     data = json.loads(text)
@@ -93,6 +103,7 @@ while len(urls) < 1000:
     desired_keys = [
         "headline",
         "name",
+        "description",
         "recipeCuisine",
         "totalTime",
         "cookTime",
@@ -117,3 +128,7 @@ while len(urls) < 1000:
     # Write the filtered data to the output file
     with open(f"{output_dir}/{headline}.json", "w", encoding="utf-8") as f:
         json.dump(filtered_data, f, indent=4)
+
+recipes_urls = set()
+recursive_recipe_search(urls[0], urls, visited_recipes=recipes_urls )
+print(recipes_urls)
