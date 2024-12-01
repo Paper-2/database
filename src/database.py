@@ -124,7 +124,7 @@ class Database:
         self.cursor.execute("SELECT * FROM Cuisines")
         return self.cursor.fetchall()
     
-    def isfavorite(self, name):  #TODO: UPDATE METHOD
+    def isfavorite(self, name):
         """
         Retrieves the favorite status of a recipe from the database.
 
@@ -140,7 +140,7 @@ class Database:
         
         return bool(result[0])
 
-    def set_favorite_status(self, recipe_name, status: int):  #TODO: UPDATE METHOD
+    def set_favorite(self, name, status: int): 
         """
         Updates the favorite status of a recipe in the database.
 
@@ -151,7 +151,7 @@ class Database:
         Returns:
             None
         """
-        self.cursor.execute("UPDATE Cuisines SET is_favorite = ? WHERE name = ?", (status, recipe_name))
+        self.cursor.execute("UPDATE Cuisines SET is_favorite = ? WHERE name = ?", (status, name))
         self.cursor.connection.commit()
 
     def __close(self):
@@ -228,4 +228,5 @@ def list_to_long_string(data):
 if __name__ == "__main__":
     data = Database()
     print(data.get_all_recipes())
+    data.set_favorite("African Sweet Potato Stew", 1)
     print(data.isfavorite("African Sweet Potato Stew"))
