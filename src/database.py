@@ -2,21 +2,23 @@ import sqlite3
 import os
 import json
 
+
 class Database:
-    
-    def __init__(self) -> None: 
-        os.remove('recipes_data.db')
-        self.connection = sqlite3.connect('recipes_data.db')
-        
+
+    def __init__(self) -> None:
+        os.remove("recipes_data.db")
+        self.connection = sqlite3.connect("recipes_data.db")
+
         self.cursor = self.connection.cursor()
 
         self.__create_table()
 
-    def __create_table(self):  
-        
+    def __create_table(self):
+
         json_files = get_all_jsons()
-        
-        self.cursor.execute("""--sql -- the --sql is part of a vscode extension that allows me to color sql code in the python file and -- is a comment in sql
+
+        self.cursor.execute(
+            """--sql -- the --sql is part of a vscode extension that allows me to color sql code in the python file and -- is a comment in sql
             CREATE TABLE IF NOT EXISTS Cuisines
             (
                 name TEXT PRIMARY KEY, -- the name of the recipe which must be unique
@@ -41,89 +43,95 @@ class Database:
                 recipeYield INTEGER,
                 is_favorite INTEGER
             )
-            """)
-        
+            """
+        )
+
         for json_file in json_files:
-            with open(json_file, 'r') as f:
+            with open(json_file, "r") as f:
                 data = json.load(f)
-                nutrition = json.dumps(data.get('nutrition', {}))
-                recipeCuisine = json.dumps(data.get('recipeCuisine', []))
-                recipeIngredient = json.dumps(data.get('recipeIngredient', []))
-                
+                nutrition = json.dumps(data.get("nutrition", {}))
+                recipeCuisine = json.dumps(data.get("recipeCuisine", []))
+                recipeIngredient = json.dumps(data.get("recipeIngredient", []))
+
                 try:
                     # Extract nutrition information
-                    nutrition_data = data.get('nutrition', {})
-                    calories = nutrition_data.get('calories', '')
-                    carbohydrateContent = nutrition_data.get('carbohydrateContent', '')
-                    cholesterolContent = nutrition_data.get('cholesterolContent', '')
-                    fiberContent = nutrition_data.get('fiberContent', '')
-                    proteinContent = nutrition_data.get('proteinContent', '')
-                    saturatedFatContent = nutrition_data.get('saturatedFatContent', '')
-                    sodiumContent = nutrition_data.get('sodiumContent', '')
-                    sugarContent = nutrition_data.get('sugarContent', '')
-                    fatContent = nutrition_data.get('fatContent', '')
-                    unsaturatedFatContent = nutrition_data.get('unsaturatedFatContent', '')
-                    
-                    
-                    recipeCategory = json.dumps(data.get('recipeCategory', [])[0])
-                    
-                    
-                    recipeInstructions = list_to_long_string(data.get('recipeInstructions', []))
-                    
-                    
-                    recipeYield = data.get('recipeYield', 0)[0]
-                    
+                    nutrition_data = data.get("nutrition", {})
+                    calories = nutrition_data.get("calories", "")
+                    carbohydrateContent = nutrition_data.get("carbohydrateContent", "")
+                    cholesterolContent = nutrition_data.get("cholesterolContent", "")
+                    fiberContent = nutrition_data.get("fiberContent", "")
+                    proteinContent = nutrition_data.get("proteinContent", "")
+                    saturatedFatContent = nutrition_data.get("saturatedFatContent", "")
+                    sodiumContent = nutrition_data.get("sodiumContent", "")
+                    sugarContent = nutrition_data.get("sugarContent", "")
+                    fatContent = nutrition_data.get("fatContent", "")
+                    unsaturatedFatContent = nutrition_data.get(
+                        "unsaturatedFatContent", ""
+                    )
+
+                    recipeCategory = json.dumps(data.get("recipeCategory", "None")[0])
+
+                    recipeInstructions = list_to_long_string(
+                        data.get("recipeInstructions", [])
+                    )
+
+                    recipeYield = data.get("recipeYield", [1])[0]
+
                     # Set is_favorite default value to 0
                     is_favorite = 0
-                    
-                    self.cursor.execute("""--sql
+
+                    self.cursor.execute(
+                        """--sql
                         INSERT OR REPLACE INTO Cuisines 
                         (name, description, recipeCuisine, totalTime, cookTime, 
                          calories, carbohydrateContent, cholesterolContent, fiberContent, proteinContent,
                          saturatedFatContent, sodiumContent, sugarContent, fatContent, unsaturatedFatContent,
                          prepTime, recipeCategory, recipeIngredient, recipeInstructions, recipeYield, is_favorite)
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """, (
-                        data.get('name', ''),
-                        data.get('description', ''),
-                        recipeCuisine,
-                        data.get('totalTime', ''),
-                        data.get('cookTime', ''),
-                        calories,
-                        carbohydrateContent,
-                        cholesterolContent,
-                        fiberContent,
-                        proteinContent,
-                        saturatedFatContent,
-                        sodiumContent,
-                        sugarContent,
-                        fatContent,
-                        unsaturatedFatContent,
-                        data.get('prepTime', ''),
-                        recipeCategory,
-                        recipeIngredient,
-                        recipeInstructions,
-                        recipeYield,
-                        is_favorite
-                    ))
+                    """,
+                        (
+                            data.get("name", ""),
+                            data.get("description", ""),
+                            recipeCuisine,
+                            data.get("totalTime", ""),
+                            data.get("cookTime", ""),
+                            calories,
+                            carbohydrateContent,
+                            cholesterolContent,
+                            fiberContent,
+                            proteinContent,
+                            saturatedFatContent,
+                            sodiumContent,
+                            sugarContent,
+                            fatContent,
+                            unsaturatedFatContent,
+                            data.get("prepTime", ""),
+                            recipeCategory,
+                            recipeIngredient,
+                            recipeInstructions,
+                            recipeYield,
+                            is_favorite,
+                        ),
+                    )
                 except sqlite3.Error as e:
                     print(f"Error inserting {json_file}: {e}")
                     continue
                 except sqlite3.Error as e:
                     print(f"Error inserting {json_file}: {e}")
                     continue
-            break # remove this line to insert all recipes into the database
 
-    def get_all_recipes(self):  #TODO: UPDATE METHOD
+
+    def get_all_recipes_names(self): 
         """
-        Retrieves all recipes from the Cuisines table in the database.
+        Retrieves all recipes names from the Cuisines table in the database.
         Returns:
-            list: A list of tuples, where each tuple represents a row in the Cuisines table.
+            list: A list of tuples, where each tu-ple represents a row in the Cuisines table.
         """
-        
+
         self.cursor.execute("SELECT name FROM Cuisines")
-        return self.cursor.fetchall()
-    
+        results = self.cursor.fetchall()
+        return  [name for name in results]
+
     def isfavorite(self, name):
         """
         Retrieves the favorite status of a recipe from the database.
@@ -135,12 +143,12 @@ class Database:
             bool: True if the recipe is marked as favorite, False otherwise.
         """
         self.cursor.execute("SELECT is_favorite FROM Cuisines WHERE name = ?", (name,))
-        
+
         result = self.cursor.fetchone()
-        
+
         return bool(result[0])
 
-    def set_favorite(self, name, status: int): 
+    def set_favorite(self, name, status: int):
         """
         Updates the favorite status of a recipe in the database.
 
@@ -151,20 +159,20 @@ class Database:
         Returns:
             None
         """
-        self.cursor.execute("UPDATE Cuisines SET is_favorite = ? WHERE name = ?", (status, name))
+        self.cursor.execute(
+            "UPDATE Cuisines SET is_favorite = ? WHERE name = ?", (status, name)
+        )
         self.cursor.connection.commit()
 
     def __close(self):
         self.cursor.close()
         self.connection.close()
 
-
-
-    def get_favorite_recipes(self):  #TODO: UPDATE METHOD
+    def get_favorite_recipes(self):  # TODO: UPDATE METHOD
         """
         Fetches and returns a list of favorite recipes from the Cuisines table.
         """
-        
+
         self.cursor.execute("SELECT name FROM Cuisines WHERE is_favorite = 1")
         results = self.cursor.fetchall()
         return [name for name in results]
@@ -179,17 +187,19 @@ class Database:
             If 'All' is provided, it will be treated as an empty string.
         Returns:
             list[tuple]: A list of tuples where each tuple contains the cuisine type, recipe name, ingredients list, and link.
-            """
-        if cuisine_selected == 'All':
+        """
+        if cuisine_selected == "All":
             cuisine_selected == ""
-            
+
         query = """--sql
         SELECT name
         FROM Cuisines 
         WHERE name LIKE ? AND recipeIngredient LIKE ? AND recipeCuisine LIKE ?
         """
 
-        self.cursor.execute(query, (f'%{recipe_name}%', f'%{ingredients}%', f'%{cuisine_selected}%'))
+        self.cursor.execute(
+            query, (f"%{recipe_name}%", f"%{ingredients}%", f"%{cuisine_selected}%")
+        )
         results = self.cursor.fetchall()
 
         return [name for name in results]
@@ -217,10 +227,13 @@ class Database:
             "sodiumContent": result[11],
             "sugarContent": result[12],
             "fatContent": result[13],
-            "unsaturatedFatContent": result[14]
+            "unsaturatedFatContent": result[14],
         }
-    
+
     def get_recipe(self, name):
+        if isinstance(name, tuple):
+            name = name[0]
+            
         """
         Retrieves all the information for a recipe from the database.
 
@@ -253,9 +266,9 @@ class Database:
             "recipeCategory": result[16],
             "recipeIngredient": result[17],
             "recipeInstructions": result[18],
-            "recipeYield": result[19]
+            "recipeYield": result[19],
         }
-    
+
     def get_recipe_ingredients(self, name):
         """
         Retrieves the ingredients for a recipe from the database.
@@ -266,7 +279,9 @@ class Database:
         Returns:
             list: A list of ingredients for the recipe.
         """
-        self.cursor.execute("SELECT recipeIngredient FROM Cuisines WHERE name = ?", (name,))
+        self.cursor.execute(
+            "SELECT recipeIngredient FROM Cuisines WHERE name = ?", (name,)
+        )
         result = self.cursor.fetchone()
 
         return result[0]
@@ -281,11 +296,13 @@ class Database:
         Returns:
             list: A list of instructions for the recipe.
         """
-        self.cursor.execute("SELECT recipeInstructions FROM Cuisines WHERE name = ?", (name,))
+        self.cursor.execute(
+            "SELECT recipeInstructions FROM Cuisines WHERE name = ?", (name,)
+        )
         result = self.cursor.fetchone()
 
         return result[0]
-    
+
 
 def get_all_jsons():
     """
@@ -295,13 +312,14 @@ def get_all_jsons():
     """
     path = r"recipes"
     json_files = []
-    
+
     for dirpath, _, filenames in os.walk(path):
         for filename in filenames:
-            if filename.endswith('.json'):
+            if filename.endswith(".json"):
                 json_files.append(os.path.join(dirpath, filename))
-    
+
     return json_files
+
 
 def list_to_long_string(data):
     """
@@ -315,12 +333,11 @@ def list_to_long_string(data):
     counter = 1
     for json_object in data:
 
-        result += f"Step {counter}: {json_object["text"]}\n"
+        result += f"Step {counter}: {json_object.get("text", "")}\n"
         counter += 1
     return result
-    
+
+
 if __name__ == "__main__":
     data = Database()
-    data.set_favorite("African Sweet Potato Stew", 1)
-    print(data.isfavorite("African Sweet Potato Stew"))
-    print(data.search_recipes("", "", ""))
+    print(data.get_all_recipes_names())
