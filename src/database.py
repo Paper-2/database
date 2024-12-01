@@ -204,8 +204,6 @@ def get_all_jsons():
         for filename in filenames:
             if filename.endswith('.json'):
                 json_files.append(os.path.join(dirpath, filename))
-                if len(json_files) % 100 == 0:
-                    print(f"Found {len(json_files)} JSON files.")
     
     return json_files
 
