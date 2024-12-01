@@ -124,19 +124,21 @@ class Database:
         self.cursor.execute("SELECT * FROM Cuisines")
         return self.cursor.fetchall()
     
-    def get_favorite_status(self, recipe_name):  #TODO: UPDATE METHOD
+    def isfavorite(self, name):  #TODO: UPDATE METHOD
         """
         Retrieves the favorite status of a recipe from the database.
 
         Args:
-            recipe_name (str): The name of the recipe to check.
+            name (str): The name of the recipe to check.
 
         Returns:
-            int: 1 if the recipe is marked as favorite, 0 otherwise.
+            bool: True if the recipe is marked as favorite, False otherwise.
         """
-        self.cursor.execute("SELECT is_favorite FROM Cuisines WHERE rec_name = ?", (recipe_name,))
+        self.cursor.execute("SELECT is_favorite FROM Cuisines WHERE name = ?", (name,))
+        
         result = self.cursor.fetchone()
-        return result[0] if result else 0
+        
+        return bool(result[0])
 
     def set_favorite_status(self, recipe_name, status: int):  #TODO: UPDATE METHOD
         """
@@ -149,7 +151,7 @@ class Database:
         Returns:
             None
         """
-        self.cursor.execute("UPDATE Cuisines SET is_favorite = ? WHERE rec_name = ?", (status, recipe_name))
+        self.cursor.execute("UPDATE Cuisines SET is_favorite = ? WHERE name = ?", (status, recipe_name))
         self.cursor.connection.commit()
 
     def __close(self):
@@ -163,9 +165,9 @@ class Database:
         Fetches and returns a list of favorite recipes from the Cuisines table.
         """
         
-        self.cursor.execute("SELECT rec_name, ingredients_list, link FROM Cuisines WHERE is_favorite = 1")
+        self.cursor.execute("SELECT name, ingredients_list, link FROM Cuisines WHERE is_favorite = 1")
         results = self.cursor.fetchall()
-        return [(rec_name, ingredients_list, link) for rec_name, ingredients_list, link in results]
+        return [(name, ingredients_list, link) for name, ingredients_list, link in results]
 
     def search_recipes(self, recipe_name, ingredients="", cuisine_selected=""):  #TODO: UPDATE METHOD
         """
@@ -181,15 +183,15 @@ class Database:
         if cuisine_selected == 'All':
             cuisine_selected == ""
         query = """
-        SELECT rec_name, ingredients_list, link 
+        SELECT name, ingredients_list, link 
         FROM Cuisines 
-        WHERE rec_name LIKE ? AND ingredients_list LIKE ? AND cui_type LIKE ?
+        WHERE name LIKE ? AND ingredients_list LIKE ? AND cui_type LIKE ?
         """
 
         self.cursor.execute(query, (f'%{recipe_name}%', f'%{ingredients}%', f'%{cuisine_selected}%'))
         results = self.cursor.fetchall()
 
-        return [("cui_type", rec_name, ingredients_list, link) for  rec_name, ingredients_list, link in results]
+        return [("cui_type", name, ingredients_list, link) for  name, ingredients_list, link in results]
 
 def get_all_jsons():
     """
@@ -226,3 +228,4 @@ def list_to_long_string(data):
 if __name__ == "__main__":
     data = Database()
     print(data.get_all_recipes())
+    print(data.isfavorite("African Sweet Potato Stew"))
