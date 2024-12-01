@@ -165,9 +165,9 @@ class Database:
         Fetches and returns a list of favorite recipes from the Cuisines table.
         """
         
-        self.cursor.execute("SELECT name, ingredients_list, link FROM Cuisines WHERE is_favorite = 1")
+        self.cursor.execute("SELECT name FROM Cuisines WHERE is_favorite = 1")
         results = self.cursor.fetchall()
-        return [(name, ingredients_list, link) for name, ingredients_list, link in results]
+        return [name for name in results]
 
     def search_recipes(self, recipe_name, ingredients="", cuisine_selected=""):  #TODO: UPDATE METHOD
         """
@@ -182,16 +182,17 @@ class Database:
             """
         if cuisine_selected == 'All':
             cuisine_selected == ""
-        query = """
-        SELECT name, ingredients_list, link 
+            
+        query = """--sql
+        SELECT name
         FROM Cuisines 
-        WHERE name LIKE ? AND ingredients_list LIKE ? AND cui_type LIKE ?
+        WHERE name LIKE ? AND recipeIngredient LIKE ? AND recipeCuisine LIKE ?
         """
 
         self.cursor.execute(query, (f'%{recipe_name}%', f'%{ingredients}%', f'%{cuisine_selected}%'))
         results = self.cursor.fetchall()
 
-        return [("cui_type", name, ingredients_list, link) for  name, ingredients_list, link in results]
+        return [name for name in results]
 
 def get_all_jsons():
     """
@@ -227,6 +228,6 @@ def list_to_long_string(data):
     
 if __name__ == "__main__":
     data = Database()
-    print(data.get_all_recipes())
     data.set_favorite("African Sweet Potato Stew", 1)
     print(data.isfavorite("African Sweet Potato Stew"))
+    print(data.search_recipes("", "", ""))
