@@ -152,7 +152,7 @@ class Database:
         self.cursor.execute("UPDATE Cuisines SET is_favorite = ? WHERE rec_name = ?", (status, recipe_name))
         self.cursor.connection.commit()
 
-    def __close(self):  #TODO: UPDATE METHOD
+    def __close(self):
         self.cursor.close()
         self.connection.close()
 
