@@ -1,6 +1,5 @@
 import sqlite3
 
-
 class Database:
     
     def __init__(self) -> None:
@@ -11,11 +10,10 @@ class Database:
 
     def __create_table(self):
      
-        self.cursor.execute("DROP TABLE IF EXISTS Cuisines") # drops the old table
+        self.cursor.execute("DROP TABLE IF EXISTS Cuisines")  # Drops the old table
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS Cuisines
-        (cui_type TEXT, rec_name TEXT, ingredients_list TEXT, link TEXT, is_favorite INTEGER DEFAULT 0)
-        ''') # makes a new table 
-        
+        (cui_type TEXT, rec_name TEXT, ingredients_list TEXT, link TEXT)
+        ''')  # Makes a new table 
         
         try:
             # Italian Dishes
@@ -166,49 +164,10 @@ class Database:
         
         self.cursor.execute("SELECT * FROM Cuisines")
         return self.cursor.fetchall()
-    
-    def get_favorite_status(self, recipe_name):
-        """
-        Retrieves the favorite status of a recipe from the database.
-
-        Args:
-            recipe_name (str): The name of the recipe to check.
-
-        Returns:
-            int: 1 if the recipe is marked as favorite, 0 otherwise.
-        """
-        self.cursor.execute("SELECT is_favorite FROM Cuisines WHERE rec_name = ?", (recipe_name,))
-        result = self.cursor.fetchone()
-        return result[0] if result else 0
-
-    def set_favorite_status(self, recipe_name, status: int):
-        """
-        Updates the favorite status of a recipe in the database.
-
-        Args:
-            recipe_name (str): The name of the recipe to update.
-            status (int): The new favorite status (e.g., 1 for favorite, 0 for not favorite).
-
-        Returns:
-            None
-        """
-        self.cursor.execute("UPDATE Cuisines SET is_favorite = ? WHERE rec_name = ?", (status, recipe_name))
-        self.cursor.connection.commit()
 
     def __close(self):
         self.cursor.close()
         self.connection.close()
-
-
-
-    def get_favorite_recipes(self):
-        """
-        Fetches and returns a list of favorite recipes from the Cuisines table.
-        """
-        
-        self.cursor.execute("SELECT rec_name, ingredients_list, link FROM Cuisines WHERE is_favorite = 1")
-        results = self.cursor.fetchall()
-        return [(rec_name, ingredients_list, link) for rec_name, ingredients_list, link in results]
 
     def search_recipes(self, recipe_name, ingredients="", cuisine_selected=""):
         """
@@ -232,11 +191,9 @@ class Database:
         self.cursor.execute(query, (f'%{recipe_name}%', f'%{ingredients}%', f'%{cuisine_selected}%'))
         results = self.cursor.fetchall()
 
-        return [("cui_type", rec_name, ingredients_list, link) for  rec_name, ingredients_list, link in results]
+        return [("cui_type", rec_name, ingredients_list, link) for rec_name, ingredients_list, link in results]
 
 if __name__ == "__main__":
     data = Database()
     print(data.search_recipes("", "", "All"))
     data.close()
-
-
