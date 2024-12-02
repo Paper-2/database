@@ -1,6 +1,5 @@
 import sqlite3
 
-
 class Database:
     
     def __init__(self) -> None:
@@ -11,11 +10,10 @@ class Database:
 
     def __create_table(self):
      
-        self.cursor.execute("DROP TABLE IF EXISTS Cuisines") # drops the old table
+        self.cursor.execute("DROP TABLE IF EXISTS Cuisines")  # Drops the old table
         self.cursor.execute('''CREATE TABLE IF NOT EXISTS Cuisines
-        (cui_type TEXT, rec_name TEXT, ingredients_list TEXT, link TEXT, is_favorite INTEGER DEFAULT 0)
-        ''') # makes a new table 
-        
+        (cui_type TEXT, rec_name TEXT, ingredients_list TEXT, link TEXT)
+        ''')  # Makes a new table 
         
         try:
             # Italian Dishes
@@ -195,10 +193,9 @@ class Database:
         self.cursor.execute(query, (f'%{recipe_name}%', f'%{ingredients}%', f'%{cuisine_selected}%'))
         results = self.cursor.fetchall()
 
-        return [("cui_type", rec_name, ingredients_list, link) for  rec_name, ingredients_list, link in results]
+        return [("cui_type", rec_name, ingredients_list, link) for rec_name, ingredients_list, link in results]
 
 if __name__ == "__main__":
     data = Database()
     print(data.search_recipes("", "", "All"))
     data.close()
-

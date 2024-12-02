@@ -116,7 +116,7 @@ class MainWindow(QMainWindow):
 
         # Initially load all recipes
         self.__add_item(
-            [recipe_widget(Recipe(recipe)) for recipe in self.data.get_all_recipes()]
+            [recipe_widget(Recipe(recipe), self) for recipe in self.data.get_all_recipes()]
         )
 #made a ingredients function that categorizes all of the ingredients in the available recipies to choose from
     def __populate_ingredient_lists(self):
@@ -291,7 +291,10 @@ class MainWindow(QMainWindow):
     def __add_item(self, recipe_widgets):
         """Add recipe widgets to the main layout."""
         for widget in recipe_widgets:
-            self.recipes.append(widget)  # Use append instead of add
+            if widget.title in self.recipes:
+                print("skipping duplicate")
+                continue
+            self.recipes.add(widget.title)
             self.sub_layout.addWidget(widget.horizontal_item_widget())
 
     def __remove_items_based_on_search(self, to_keep: set):
@@ -359,28 +362,35 @@ class MainWindow(QMainWindow):
         self.__remove_items_based_on_search(recipes_to_keep)
 
     def add_to_favorites(self, recipe_widget):
-        """Add a recipe to the favorites list and update the favorites tab."""
+        """Add a recipe to the favorites set and update the favorites tab."""
         if recipe_widget.title not in self.favorites:
-            self.favorites.append(recipe_widget.title)
-            self.favorites_layout.addWidget(recipe_widget.horizontal_item_widget())  # Add to favorites layout
-            if hasattr(self, 'favorites_window'):
-                self.favorites_window.update_favorites_list()  # Update the favorites window if open
+            self.favorites.add(recipe_widget.title)
+            # Remove from main layout
+            for i in range(self.sub_layout.count()):
+                widget = self.sub_layout.itemAt(i).widget()
+                if widget and widget.findChild(QLabel, "title").text() == recipe_widget.title:
+                    self.sub_layout.removeWidget(widget)
+                    break
+            # Add to favorites layout
+            self.favorites_layout.addWidget(recipe_widget.horizontal_item_widget())
+            recipe_widget.favorite_button.setText("Unfavorite")
+            recipe_widget.is_favorite = True
 
     def remove_from_favorites(self, recipe_widget):
-        """Remove a recipe from the favorites list and update the favorites tab."""
+        """Remove a recipe from the favorites set and update the favorites tab."""
         if recipe_widget.title in self.favorites:
             self.favorites.remove(recipe_widget.title)
-            # Remove from favorites layout (you may need to implement a method to find and remove the widget)
+            # Remove from favorites layout
             for i in range(self.favorites_layout.count()):
                 widget = self.favorites_layout.itemAt(i).widget()
                 if widget and widget.findChild(QLabel, "title").text() == recipe_widget.title:
-                    widget.deleteLater()
+                    self.favorites_layout.removeWidget(widget)
                     break
+            # Add back to main layout
+            self.sub_layout.addWidget(recipe_widget.horizontal_item_widget())
+            recipe_widget.favorite_button.setText("Favorite")
+            recipe_widget.is_favorite = False
 
-    def open_favorites_window(self):
-        """Open the favorites window."""
-        self.favorites_window = FavoritesWindow(self.favorites, self)  # Pass self to FavoritesWindow
-        self.favorites_window.exec_()
 
 
 # You would also need to update the 'recipe_widget' class and other logic as needed.
