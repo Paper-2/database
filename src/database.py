@@ -51,7 +51,7 @@ class Database:
                 data = json.load(f)
                 nutrition = json.dumps(data.get("nutrition", {}))
                 recipeCuisine = json.dumps(data.get("recipeCuisine", []))
-                recipeIngredient = json.dumps(data.get("recipeIngredient", []))
+                recipeIngredient = listsrt_to_long_string(data.get("recipeIngredient", []))
 
                 try:
                     # Extract nutrition information
@@ -71,7 +71,7 @@ class Database:
 
                     recipeCategory = json.dumps(data.get("recipeCategory", "None")[0])
 
-                    recipeInstructions = list_to_long_string(
+                    recipeInstructions = listdict_to_long_string(
                         data.get("recipeInstructions", [])
                     )
 
@@ -321,9 +321,9 @@ def get_all_jsons():
     return json_files
 
 
-def list_to_long_string(data):
+def listdict_to_long_string(data):
     """
-    Converts a list too a line separated string. Meant to be used for instructions.
+    Converts a list to a line separated string. Meant to be used for instructions.
     Args:
         data (dict): The dictionary to convert.
     Returns:
@@ -336,6 +336,23 @@ def list_to_long_string(data):
         result += f"Step {counter}: {json_object.get("text", "")}\n"
         counter += 1
     return result
+
+def listsrt_to_long_string(data):
+    """
+    Converts a list to a line separated string. Meant to be used for instructions.
+    Args:
+        data (list): The list to convert.
+    Returns:
+        str: The long string representation of the nested dictionary.
+    """
+    result = ""
+    counter = 1
+    for json_object in data:
+
+        result += f"{json_object}\n"
+        counter += 1
+    return result
+
 
 
 if __name__ == "__main__":

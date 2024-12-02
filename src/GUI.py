@@ -357,6 +357,10 @@ class recipe_widget:
         description.setWordWrap(True)
         description.setAlignment(Qt.AlignTop)
         
+        ingredients = QLabel(self.recipe.recipeIngredient)
+        ingredients.setWordWrap(True)
+        ingredients.setAlignment(Qt.AlignTop)
+        
         # Create and configure the back button
         push_button = QPushButton("<-- Back")
         push_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -370,6 +374,7 @@ class recipe_widget:
         layout.addWidget(push_button)
         layout.addWidget(QLabel(self.recipe.name))
         layout.addWidget(description)
+        layout.addWidget(ingredients)
         layout.addWidget(instructions)
         layout.addSpacerItem(
             QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
