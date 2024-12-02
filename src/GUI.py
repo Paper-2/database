@@ -347,7 +347,10 @@ class recipe_widget:
         # Create the main widget and layout for the recipe view
         main_widget = QWidget()
         layout = QVBoxLayout()
-
+        name = QLabel(self.recipe.name)
+        name.setAlignment(Qt.AlignCenter)
+        name.setStyleSheet("font-size: 20px; font-weight: bold;")
+        
         # Create and configure the instructions label
         instructions = QLabel(self.recipe.recipeInstructions)
         instructions.setWordWrap(True)
@@ -372,7 +375,7 @@ class recipe_widget:
 
         # Add widgets to the layout
         layout.addWidget(push_button)
-        layout.addWidget(QLabel(self.recipe.name))
+        layout.addWidget(name)
         layout.addWidget(description)
         layout.addWidget(ingredients)
         layout.addWidget(instructions)
