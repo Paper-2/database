@@ -252,6 +252,7 @@ class recipe_widget:
     def __init__(self, recipe, MainWindow: QMainWindow = None):
         self.window = MainWindow
         self.recipe = recipe
+        
         self.title = self.recipe.name
         self.item_widget = None
         # Load the favorite status from the database using main window's data reference
@@ -348,10 +349,14 @@ class recipe_widget:
         layout = QVBoxLayout()
 
         # Create and configure the instructions label
-        instructions = QLabel(self.recipe.instructions)
+        instructions = QLabel(self.recipe.recipeInstructions)
         instructions.setWordWrap(True)
         instructions.setAlignment(Qt.AlignTop)
-
+        
+        description = QLabel(self.recipe.description)
+        description.setWordWrap(True)
+        description.setAlignment(Qt.AlignTop)
+        
         # Create and configure the back button
         push_button = QPushButton("<-- Back")
         push_button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -363,7 +368,8 @@ class recipe_widget:
 
         # Add widgets to the layout
         layout.addWidget(push_button)
-        layout.addWidget(QLabel(self.recipe.title))
+        layout.addWidget(QLabel(self.recipe.name))
+        layout.addWidget(description)
         layout.addWidget(instructions)
         layout.addSpacerItem(
             QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
@@ -373,14 +379,15 @@ class recipe_widget:
 
 #fixed back to button to go back to the main_widget
     def on_back_click(self):
-        # Restore the original UI layout and make the dock widget visible again
-        self.window.dock_widget.setHidden(False)  # Show the dock widget
-        self.window.setCentralWidget(self.window.main_widget)  # Reset the central widget
         """
         Handles the event when the back button is clicked.
         This method restores the original UI layout by making the dock widget visible
         and resetting the central widget to the main widget.
         """
+        # Restore the original UI layout and make the dock widget visible again
+        self.window.dock_widget.setHidden(False)  # Show the dock widget
+        self.window.setCentralWidget(self.window.main_widget)  # Reset the central widget
+        
         
         # Restore the original UI layout and make the dock widget visible again
         self.window.dock_widget.setHidden(False)  # Show the dock widget
