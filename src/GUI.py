@@ -4,8 +4,9 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QPixmap, QIcon
 from PySide6.QtWidgets import *
 
-from database import Database
-from utils import Recipe
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from src.database import Database
+from src.utils import Recipe
 
 ICON_PATH: str = os.path.join(os.getcwd(), "recipe_database_icon.png")
 PATH_TO_RECIPE: str = os.path.join(os.getcwd(), "mashed_potatoes.txt")
@@ -168,7 +169,7 @@ class MainWindow(QMainWindow):
     def __add_item(self, recipe_widgets):
         for widget in recipe_widgets:
             if widget.title in self.recipes:
-                print("skipping duplicate")
+                #print("skipping duplicate")
                 continue
 
             self.recipes.add(widget.title)
@@ -177,7 +178,7 @@ class MainWindow(QMainWindow):
     def __remove_items_based_on_search(self, to_keep: set):
         allowed_recipes = to_keep.intersection(self.recipes)
         self.recipes = allowed_recipes
-        print(self.sub_layout.count())
+        #print(self.sub_layout.count())
         for i in reversed(range(self.sub_layout.count())):
             widget = self.sub_layout.itemAt(i).widget()
             if widget:
@@ -188,7 +189,7 @@ class MainWindow(QMainWindow):
     def __restart_ui(self):
         self.setCentralWidget(self.main_widget)
 
-    def __search(self):
+    def __search(self): # TODO: make this faster...
         # Combine all selected ingredients from all lists
         ingredients = ""
 
@@ -229,8 +230,7 @@ class MainWindow(QMainWindow):
         recipe_widgets = []
 
         for recipe in recipes:
-            if len(recipe) <= 3:
-                print(recipe)
+
             recipe_widgets.append(recipe_widget(Recipe(self.data.get_recipe(recipe)), self))
         self.__add_item(recipe_widgets)
 
@@ -240,15 +240,16 @@ class MainWindow(QMainWindow):
 # You would also need to update the 'recipe_widget' class and other logic as needed.
 class recipe_widget:
     def __init__(self, recipe, main_window: QMainWindow = None):
+        """
+        recipe_widget is a class that represents a widget for displaying and interacting with a recipe in a GUI application.
+        Attributes:
+            window (QMainWindow): The main window instance where the widget is displayed.
+            recipe (Recipe): The recipe object containing details about the recipe.
+            title (str): The title of the recipe.
+            item_widget (QGroupBox): The widget instance for displaying the recipe in a horizontal layout.
+        """
+        
         self.window = main_window  # Store reference to MainWindow
-    """
-    recipe_widget is a class that represents a widget for displaying and interacting with a recipe in a GUI application.
-    Attributes:
-        window (QMainWindow): The main window instance where the widget is displayed.
-        recipe (Recipe): The recipe object containing details about the recipe.
-        title (str): The title of the recipe.
-        item_widget (QGroupBox): The widget instance for displaying the recipe in a horizontal layout.
-    """
     def __init__(self, recipe, MainWindow: QMainWindow = None):
         self.window = MainWindow
         self.recipe = recipe

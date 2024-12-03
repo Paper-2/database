@@ -1,7 +1,10 @@
-from database import Database
-from PySide6.QtWidgets import QApplication
-from GUI import MainWindow
-from utils import Recipe
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+from src.database import Database
+from src.GUI import MainWindow
+from PySide6.QtWidgets import *
+
 
 database = Database()
 app = QApplication([])

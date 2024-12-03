@@ -6,7 +6,9 @@ import json
 class Database:
 
     def __init__(self) -> None:
-        os.remove("recipes_data.db")
+        if os.path.exists("recipes_data.db"):
+            os.remove("recipes_data.db")
+    
         self.connection = sqlite3.connect("recipes_data.db")
 
         self.cursor = self.connection.cursor()
@@ -119,6 +121,8 @@ class Database:
                 except sqlite3.Error as e:
                     print(f"Error inserting {json_file}: {e}")
                     continue
+                
+        self.cursor.connection.commit()
 
 
     def get_all_recipes_names(self): 
