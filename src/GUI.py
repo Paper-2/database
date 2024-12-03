@@ -19,7 +19,8 @@ class MainWindow(QMainWindow):
     def __init__(self, data: Database):
         super(MainWindow, self).__init__()
         self.data = data
-        self.recipes = set()
+        self.recipes = set()  # List to store recipe widgets
+        self.favorites = set()  # List to store favorite recipes
         self.setWindowTitle("Recipe book")
         self.setMinimumHeight(400)
         self.setMinimumWidth(600)
@@ -27,13 +28,16 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(QIcon(ICON_PATH))
         self.__start_ui()
         self.show()
-        
     def __start_ui(self):
         self.main_layout = QVBoxLayout()
         self.sub_layout = QVBoxLayout()
+        self.favorites_layout = QVBoxLayout()  # Layout for favorites tab
 
         self.main_widget = QWidget()
         self.sub_widget = QWidget()
+        self.favorites_widget = QWidget()  # Widget for favorites tab
+
+
 
         # Search buttons
         self.search_button = QPushButton("Search")
@@ -60,6 +64,11 @@ class MainWindow(QMainWindow):
         self.combo.addItem("Chinese")
 
         # Create QTabWidget for ingredient groups
+
+        self.dock_widget = QDockWidget("Search Filters")
+        self.addDockWidget(Qt.RightDockWidgetArea, self.dock_widget)
+
+        # Create QTabWidget for ingredient groups and favorites
         self.tab_widget = QTabWidget()
 
         # Create ingredient lists by category
@@ -81,6 +90,12 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(self.seasoning_list, "Seasonings/Spices")
         self.tab_widget.addTab(self.oil_list, "Oils")
         self.tab_widget.addTab(self.dairy_list, "Dairy")
+
+        # Create Favorites tab
+        self.tab_widget.addTab(self.favorites_widget, "Favorites")  # Add favorites tab
+
+        # Set layout for favorites widget
+        self.favorites_widget.setLayout(self.favorites_layout)
 
         self.dock_widget.setAllowedAreas(Qt.RightDockWidgetArea)
         dock_layout = QVBoxLayout()
@@ -117,6 +132,7 @@ class MainWindow(QMainWindow):
         for recipe_name in self.data.get_all_recipes_names():
             self.__add_item([recipe_widget(Recipe(self.data.get_recipe(recipe_name)), self)])
             
+
     def _populate_ingredient_lists(self):
         # Proteins
         proteins = ["Chicken", "Beef", "Pork", "Tuna", "Eggs", "Veal", "Chuck Roast"]
@@ -236,47 +252,53 @@ class MainWindow(QMainWindow):
 
         self.__remove_items_based_on_search(recipes_to_keep)
 
+    def add_to_favorites(self, recipe_widget):
+        """Add a recipe to the favorites set and update the favorites tab."""
+        if recipe_widget.title not in self.favorites:
+            self.favorites.add(recipe_widget.title)
+            # Remove from main layout
+            for i in range(self.sub_layout.count()):
+                widget = self.sub_layout.itemAt(i).widget()
+                if widget and widget.findChild(QLabel, "title").text() == recipe_widget.title:
+                    self.sub_layout.removeWidget(widget)
+                    break
+            # Add to favorites layout
+            self.favorites_layout.addWidget(recipe_widget.horizontal_item_widget())
+            recipe_widget.favorite_button.setText("Unfavorite")
+            recipe_widget.is_favorite = True
+
+    def remove_from_favorites(self, recipe_widget):
+        """Remove a recipe from the favorites set and update the favorites tab."""
+        if recipe_widget.title in self.favorites:
+            self.favorites.remove(recipe_widget.title)
+            # Remove from favorites layout
+            for i in range(self.favorites_layout.count()):
+                widget = self.favorites_layout.itemAt(i).widget()
+                if widget and widget.findChild(QLabel, "title").text() == recipe_widget.title:
+                    self.favorites_layout.removeWidget(widget)
+                    break
+            # Add back to main layout
+            self.sub_layout.addWidget(recipe_widget.horizontal_item_widget())
+            recipe_widget.favorite_button.setText("Favorite")
+            recipe_widget.is_favorite = False
+
+
 
 # You would also need to update the 'recipe_widget' class and other logic as needed.
 class recipe_widget:
-    def __init__(self, recipe, main_window: QMainWindow = None):
-        """
-        recipe_widget is a class that represents a widget for displaying and interacting with a recipe in a GUI application.
-        Attributes:
-            window (QMainWindow): The main window instance where the widget is displayed.
-            recipe (Recipe): The recipe object containing details about the recipe.
-            title (str): The title of the recipe.
-            item_widget (QGroupBox): The widget instance for displaying the recipe in a horizontal layout.
-        """
-        
+    def __init__(self, recipe, main_window: MainWindow = None):
         self.window = main_window  # Store reference to MainWindow
-    def __init__(self, recipe, MainWindow: QMainWindow = None):
-        self.window = MainWindow
         self.recipe = recipe
-        
-        self.title = self.recipe.name
+        self.title = self.recipe.title
         self.item_widget = None
-        # Load the favorite status from the database using main window's data reference
-        self.is_favorite = self.window.data.isfavorite(self.recipe.name) if self.window else 0
+        self.favorite_button = None  # Add a button for favorites
+        self.is_favorite = False  # Track favorite status
 
-    def get_widget(self):
-        """
-        Retrieve the widget instance.
-        Returns:
-            Widget: The widget instance associated with this object.
-        """
-        
-        return self.widget
+        # Add this recipe widget to the main window's recipe list
+        if self.window:
+            self.window.recipes.add(self)
 
     def horizontal_item_widget(self):
-        """
-        Creates and returns a horizontal item widget for displaying a recipe.
-        This method checks if the item widget already exists. If it does, it returns the existing widget.
-        Otherwise, it creates a new horizontal layout containing an icon, a title label, and a favorite button,
-        sets this layout to a QGroupBox, and returns the newly created widget.
-        Returns:
-            QGroupBox: The horizontal item widget containing the recipe's icon, title, and favorite button.
-        """
         if self.item_widget is not None:
             return self.item_widget
 
@@ -286,9 +308,9 @@ class recipe_widget:
         icon = QLabel()
         icon.setPixmap(QPixmap(ICON_PATH).scaled(80, 80))
 
-        # Create Favorite Button
-        self.favorite_button = QPushButton("Favorite" if not self.is_favorite else "Unfavorite")
-        self.favorite_button.clicked.connect(self.on_favorite_toggle)
+        # Create the favorite button
+        self.favorite_button = QPushButton("Favorite")
+        self.favorite_button.clicked.connect(self.toggle_favorite)  # Connect to toggle function
 
         # Add widgets to layout
         layout.addWidget(icon)
@@ -304,20 +326,17 @@ class recipe_widget:
 
         return self.item_widget
 
-    def on_favorite_toggle(self):
-        """
-        Toggles the favorite state of the recipe.
-        Updates the database and changes the button text accordingly.
-        """
+    def toggle_favorite(self):
         # Toggle favorite status
         self.is_favorite = not self.is_favorite
-
-        # Update the favorite status in the database
-        if self.window:
-            self.window.data.set_favorite_status(self.recipe.title, int(self.is_favorite))
-
-        # Update the button text based on the new status
-        self.favorite_button.setText("Unfavorite" if self.is_favorite else "Favorite")
+        if self.is_favorite:
+            self.favorite_button.setText("Unfavorite")
+            print(f"Favorited {self.title}")
+            self.window.add_to_favorites(self)
+        else:
+            self.favorite_button.setText("Favorite")
+            print(f"Unfavorited {self.title}")
+            self.window.remove_from_favorites(self)  # Remove from favorites in MainWindow
 
     def on_item_click(self, _event):
         """
@@ -397,30 +416,10 @@ class recipe_widget:
         self.window.dock_widget.setHidden(False)  # Show the dock widget
         self.window.setCentralWidget(self.window.main_widget)  # Reset the central widget
         
-        
-        # Restore the original UI layout and make the dock widget visible again
-        self.window.dock_widget.setHidden(False)  # Show the dock widget
-        self.window.setCentralWidget(self.window.main_widget)  # Reset the central widget
 
-    def on_favorite_toggle(self):
-        """
-        Toggles the favorite state of the recipe.
-        Updates the database and changes the button text accordingly.
-        """
-        # Toggle favorite status
-        self.is_favorite = not self.is_favorite
 
-        # Update the favorite status in the database
-        self.window.data.set_favorite_status(self.recipe.title, int(self.is_favorite))
 
-        # Update the button text based on the new status
-        if self.is_favorite:
-            self.favorite_button.setText("Unfavorite")
-        else:
-            self.favorite_button.setText("Favorite")
 
-        # TODO: Implement this method to toggle the favorite state of the recipe.
-        ...
 
 if __name__ == "__main__":
     ...
